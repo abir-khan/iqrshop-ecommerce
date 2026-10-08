@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { Upload, Link as LinkIcon, Trash2, Image as ImageIcon } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Upload, Link as LinkIcon, Trash2, Image as ImageIcon, Loader2, CheckCircle2 } from 'lucide-react';
+import { compressImageFile } from '../../lib/imageCompressor';
 
 interface ImageUploadFieldProps {
   label: string;
@@ -17,18 +18,35 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   placeholder = 'https://images.unsplash.com/... অথবা ছবি আপলোড করুন',
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [uploadNotice, setUploadNotice] = useState<string>('');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Convert to base64
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          onChange(reader.result);
+      try {
+        setIsCompressing(true);
+        setUploadNotice('ছবি অপ্টিমাইজ ও প্রসেস করা হচ্ছে...');
+        const compressedDataUrl = await compressImageFile(file, 1200, 1200, 0.82);
+        onChange(compressedDataUrl);
+        setUploadNotice('✓ ছবি সফলভাবে অপ্টিমাইজ ও লোড হয়েছে!');
+        setTimeout(() => setUploadNotice(''), 3500);
+      } catch (err) {
+        console.error('Image compression failed:', err);
+        // Fallback to standard reader if compression throws
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            onChange(reader.result);
+          }
+        };
+        reader.readAsDataURL(file);
+      } finally {
+        setIsCompressing(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
         }
-      };
-      reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -70,12 +88,22 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
 
         <button
           type="button"
+          disabled={isCompressing}
           onClick={() => fileInputRef.current?.click()}
-          className="inline-flex items-center gap-1 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 active:scale-95"
-          title="কম্পিউটার থেকে ছবি বাছাই করুন"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 active:scale-95"
+          title="কম্পিউটার বা মোবাইল থেকে ছবি বাছাই করুন"
         >
-          <Upload className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">ছবি আপলোড</span>
+          {isCompressing ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-700" />
+              <span>প্রসেসিং...</span>
+            </>
+          ) : (
+            <>
+              <Upload className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">ছবি আপলোড</span>
+            </>
+          )}
         </button>
 
         {value && (
@@ -90,10 +118,18 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
         )}
       </div>
 
+      {/* Upload notice message */}
+      {uploadNotice && (
+        <div className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1 animate-in fade-in">
+          <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+          <span>{uploadNotice}</span>
+        </div>
+      )}
+
       {/* Live Preview */}
       {value && (
-        <div className="relative mt-2 p-1.5 bg-zinc-50 border border-zinc-200 rounded-xl flex items-center gap-3">
-          <div className="w-14 h-14 rounded-lg overflow-hidden bg-zinc-200 shrink-0 border border-zinc-300">
+        <div className="relative mt-2 p-2 bg-zinc-50 border border-zinc-200 rounded-xl flex items-center gap-3">
+          <div className="w-14 h-14 rounded-lg overflow-hidden bg-zinc-200 shrink-0 border border-zinc-300 shadow-2xs">
             <img
               src={value}
               alt="Preview"
@@ -104,9 +140,11 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
               }}
             />
           </div>
-          <div className="text-[11px] text-zinc-500 truncate flex-1 pr-2">
-            <span className="font-semibold text-emerald-700 block">✓ ছবি প্রিভিউ লোড হয়েছে</span>
-            <span className="truncate block text-zinc-400 max-w-[250px]">{value.slice(0, 50)}...</span>
+          <div className="text-[11px] text-zinc-500 truncate flex-1 pr-2 space-y-0.5">
+            <span className="font-bold text-emerald-800 block">✓ ছবি লোড হয়েছে ও সেভ করার জন্য প্রস্তুত</span>
+            <span className="truncate block text-zinc-400 font-mono text-[10px] max-w-[280px]">
+              {value.startsWith('data:') ? `অটো-কম্প্রেসড ইমেজ (${Math.round((value.length * 3) / 4 / 1024)} KB)` : value.slice(0, 45) + '...'}
+            </span>
           </div>
         </div>
       )}
