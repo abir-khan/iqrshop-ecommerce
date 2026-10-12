@@ -12,6 +12,7 @@ import type {
   OrderStatus,
   CategoryShowcaseBanner,
   ShowroomStripData,
+  HomeSectionItem,
 } from '../types/cms';
 import type { Product, Category, Testimonial } from '../types';
 import { DEFAULT_CMS_DATA } from '../data/defaultCmsData';
@@ -50,6 +51,7 @@ interface CmsContextType {
   updateCategoryBanners: (banners: CategoryShowcaseBanner[]) => void;
   updateSingleCategoryBanner: (bannerId: string, banner: Partial<CategoryShowcaseBanner>) => void;
   updateShowroomStrip: (strip: Partial<ShowroomStripData>) => void;
+  updateHomeSections: (sections: HomeSectionItem[]) => void;
   
   // Product CRUD
   addProduct: (product: Product) => void;
@@ -99,6 +101,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           orders: Array.isArray(parsed.orders) && parsed.orders.length > 0 ? parsed.orders : DEFAULT_CMS_DATA.orders,
           categoryBanners: Array.isArray(parsed.categoryBanners) && parsed.categoryBanners.length > 0 ? parsed.categoryBanners : DEFAULT_CMS_DATA.categoryBanners,
           showroomStrip: { ...DEFAULT_CMS_DATA.showroomStrip, ...(parsed.showroomStrip || {}) },
+          homeSections: Array.isArray(parsed.homeSections) && parsed.homeSections.length > 0 ? parsed.homeSections : DEFAULT_CMS_DATA.homeSections,
         };
       }
     } catch (e) {
@@ -143,6 +146,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               dualBanners: { ...prev.dualBanners, ...(cloudData.dualBanners || {}) },
               policies: { ...prev.policies, ...(cloudData.policies || {}) },
               orders: Array.isArray(cloudData.orders) && cloudData.orders.length > 0 ? cloudData.orders : prev.orders,
+              homeSections: Array.isArray(cloudData.homeSections) && cloudData.homeSections.length > 0 ? cloudData.homeSections : prev.homeSections,
             };
             saveToLocal(merged);
             return merged;
@@ -251,6 +255,14 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateShowroomStrip = (strip: Partial<ShowroomStripData>) => {
     setData((prev) => {
       const updated = { ...prev, showroomStrip: { ...prev.showroomStrip, ...strip } };
+      saveToLocal(updated);
+      return updated;
+    });
+  };
+
+  const updateHomeSections = (sections: HomeSectionItem[]) => {
+    setData((prev) => {
+      const updated = { ...prev, homeSections: sections };
       saveToLocal(updated);
       return updated;
     });
@@ -483,6 +495,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateCategoryBanners,
         updateSingleCategoryBanner,
         updateShowroomStrip,
+        updateHomeSections,
         addProduct,
         updateProduct,
         deleteProduct,

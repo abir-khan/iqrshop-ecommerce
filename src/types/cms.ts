@@ -171,6 +171,23 @@ export interface ShowroomStripData {
   enabled: boolean;
 }
 
+export type HomeSectionId =
+  | 'hero'
+  | 'category_nav'
+  | 'showroom_strip'
+  | 'category_sections'
+  | 'reviews'
+  | 'trust'
+  | 'newsletter';
+
+export interface HomeSectionItem {
+  id: HomeSectionId;
+  name: string;
+  description: string;
+  enabled: boolean;
+  order: number;
+}
+
 export interface CmsStoreData {
   siteSettings: SiteSettings;
   headerNavLinks: HeaderNavLink[];
@@ -184,4 +201,5 @@ export interface CmsStoreData {
   orders: CustomerOrder[];
   categoryBanners: CategoryShowcaseBanner[];
   showroomStrip: ShowroomStripData;
+  homeSections?: HomeSectionItem[];
 }

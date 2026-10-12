@@ -1,5 +1,57 @@
-import type { CmsStoreData } from '../types/cms';
+import type { CmsStoreData, HomeSectionItem } from '../types/cms';
 import { CATEGORIES, PRODUCTS, TESTIMONIALS } from './products';
+
+export const DEFAULT_HOME_SECTIONS: HomeSectionItem[] = [
+  {
+    id: 'hero',
+    name: 'হিরো ব্যানার ও মূল কালেকশন',
+    description: 'শীর্ষ ব্যানার, অফার হাইলাইট ও সরাসরি অর্ডার বাটন',
+    enabled: true,
+    order: 1,
+  },
+  {
+    id: 'category_nav',
+    name: 'ক্যাটাগরি কুইক নেভিগেশন',
+    description: 'গোল আইকনযুক্ত দ্রুত ক্যাটাগরি ব্রাউজিং বার',
+    enabled: true,
+    order: 2,
+  },
+  {
+    id: 'showroom_strip',
+    name: 'শোরুম ও গিফট স্ট্রিপ',
+    description: 'প্রিমিয়াম শোরুম কালেকশন ও গিফট অফার ফিচার স্ট্রিপ',
+    enabled: true,
+    order: 3,
+  },
+  {
+    id: 'category_sections',
+    name: 'ক্যাটাগরি অনুযায়ী প্রোডাক্ট শোকেস',
+    description: 'পাঞ্জাবি, আতর, জায়নামাজ ইত্যাদির আকর্ষণীয় শোকেস সেকশন',
+    enabled: true,
+    order: 4,
+  },
+  {
+    id: 'reviews',
+    name: 'কাস্টমার রিভিউ ও মতামত',
+    description: 'ভেরিফায়েড কাস্টমারদের রিভিউ ও স্টার রেটিং',
+    enabled: true,
+    order: 5,
+  },
+  {
+    id: 'trust',
+    name: 'বিশ্বস্ততা ও গ্যারান্টি বার',
+    description: 'ক্যাশ অন ডেলিভারি, ৭ দিনের রিটার্ন ও ১০০% অরিজিনাল ট্রাস্ট ব্যাজ',
+    enabled: true,
+    order: 6,
+  },
+  {
+    id: 'newsletter',
+    name: 'নিউজলেটার ও অফার সাবস্ক্রিপশন',
+    description: 'ডিসকাউন্ট কুপন ও নতুন কালেকশন আপডেট পাওয়ার ফর্ম',
+    enabled: true,
+    order: 7,
+  },
+];
 
 export const DEFAULT_CMS_DATA: CmsStoreData = {
   siteSettings: {
@@ -386,4 +438,5 @@ export const DEFAULT_CMS_DATA: CmsStoreData = {
       enabled: true,
     },
   ],
+  homeSections: DEFAULT_HOME_SECTIONS,
 };

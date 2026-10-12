@@ -7,6 +7,7 @@ import { CustomerReviews } from './CustomerReviews';
 import { TrustBar } from './TrustBar';
 import { Newsletter } from './Newsletter';
 import { useCms } from '../context/CmsContext';
+import { DEFAULT_HOME_SECTIONS } from '../data/defaultCmsData';
 import type { Product } from '../types';
 import type { CategoryBannerConfig } from './ShowcaseCategoryBanner';
 
@@ -118,57 +119,82 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
     ? data.categoryBanners
     : Object.values(CATEGORY_BANNERS);
 
+  const activeHomeSections = (data.homeSections && data.homeSections.length > 0)
+    ? [...data.homeSections].sort((a, b) => a.order - b.order)
+    : DEFAULT_HOME_SECTIONS;
+
   return (
     <div className="space-y-4 sm:space-y-12 lg:space-y-16 pb-6 sm:pb-20 font-sans">
-      {/* 1. Main Top Hero Banner */}
-      <ShowcaseHeroBanner onSelectCategory={onSelectCategory} />
+      {activeHomeSections
+        .filter((sec) => sec.enabled !== false)
+        .map((sec) => {
+          switch (sec.id) {
+            case 'hero':
+              return <ShowcaseHeroBanner key="hero" onSelectCategory={onSelectCategory} />;
 
-      {/* 2. Top Categories Circle Nav Bar */}
-      <ShowcaseCategoryNav onSelectCategory={onSelectCategory} />
+            case 'category_nav':
+              return <ShowcaseCategoryNav key="category_nav" onSelectCategory={onSelectCategory} />;
 
-      {/* 3. Showroom & Gift Strip */}
-      <ShowcaseShowroomStrip onSelectCategory={onSelectCategory} />
+            case 'showroom_strip':
+              return <ShowcaseShowroomStrip key="showroom_strip" onSelectCategory={onSelectCategory} />;
 
-      {/* 4. Dynamic Showcase Category Sections from CMS */}
-      {categoryBanners
-        .filter((banner) => banner.enabled !== false)
-        .map((banner) => {
-          const categoryProducts = products.filter((p) => {
-            if (banner.categoryId === 'gift') {
-              return p.category === 'gift' || p.category === 'deals';
-            }
-            return p.category === banner.categoryId;
-          });
+            case 'category_sections':
+              return (
+                <div key="category_sections" className="space-y-4 sm:space-y-12 lg:space-y-16">
+                  {categoryBanners
+                    .filter((banner) => banner.enabled !== false)
+                    .map((banner) => {
+                      const categoryProducts = products.filter((p) => {
+                        if (banner.categoryId === 'gift') {
+                          return p.category === 'gift' || p.category === 'deals';
+                        }
+                        return p.category === banner.categoryId;
+                      });
 
-          if (categoryProducts.length === 0) return null;
+                      if (categoryProducts.length === 0) return null;
 
-          return (
-            <ShowcaseCategorySection
-              key={banner.id || banner.categoryId}
-              bannerConfig={banner}
-              products={categoryProducts}
-              onSelectCategory={onSelectCategory}
-              onBuyNow={onBuyNow}
-              onQuickView={onQuickView}
-              wishlistIds={wishlistIds}
-              onToggleWishlist={onToggleWishlist}
-              maxDisplay={4}
-            />
-          );
+                      return (
+                        <ShowcaseCategorySection
+                          key={banner.id || banner.categoryId}
+                          bannerConfig={banner}
+                          products={categoryProducts}
+                          onSelectCategory={onSelectCategory}
+                          onBuyNow={onBuyNow}
+                          onQuickView={onQuickView}
+                          wishlistIds={wishlistIds}
+                          onToggleWishlist={onToggleWishlist}
+                          maxDisplay={4}
+                        />
+                      );
+                    })}
+                </div>
+              );
+
+            case 'reviews':
+              return (
+                <div key="reviews" id="reviews">
+                  <CustomerReviews />
+                </div>
+              );
+
+            case 'trust':
+              return (
+                <div key="trust" id="trust">
+                  <TrustBar />
+                </div>
+              );
+
+            case 'newsletter':
+              return (
+                <div key="newsletter" id="newsletter">
+                  <Newsletter />
+                </div>
+              );
+
+            default:
+              return null;
+          }
         })}
-
-      {/* 5. Verified Customer Reviews */}
-      <div id="reviews">
-        <CustomerReviews />
-      </div>
-
-      {/* 6. Trust Guarantee Bar */}
-      <div id="trust">
-        <TrustBar />
-      </div>
-
-      {/* 7. Newsletter Strip */}
-      <Newsletter />
     </div>
   );
 };

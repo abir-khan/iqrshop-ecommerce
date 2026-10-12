@@ -1,33 +1,63 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { CmsStoreData, SupabaseConfig } from '../types/cms';
+import { PERMANENT_SUPABASE_CONFIG } from '../config/supabaseConfig';
 
 const STORAGE_KEY_SUPABASE_CONFIG = 'iqrshop_supabase_config_v1';
 const CMS_TABLE_NAME = 'site_cms_data';
 
 export function getStoredSupabaseConfig(): SupabaseConfig {
+  let url = '';
+  let anonKey = '';
+  let isConnected = false;
+  let lastSyncedAt: string | undefined;
+
   try {
     const saved = localStorage.getItem(STORAGE_KEY_SUPABASE_CONFIG);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (typeof parsed.url === 'string' && parsed.url.trim()) {
+        url = parsed.url.trim();
+      }
+      if (typeof parsed.anonKey === 'string' && parsed.anonKey.trim()) {
+        anonKey = parsed.anonKey.trim();
+      }
+      isConnected = Boolean(parsed.isConnected);
+      lastSyncedAt = parsed.lastSyncedAt;
     }
   } catch (e) {
     console.error('Error reading Supabase config from localStorage:', e);
   }
 
-  // Check Vite env variables as fallback
-  const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
-  const envKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+  // Always fall back to permanent configuration if localStorage value is empty
+  const permanentUrl = PERMANENT_SUPABASE_CONFIG.url || ((import.meta as any).env?.VITE_SUPABASE_URL || '').trim();
+  const permanentAnonKey = PERMANENT_SUPABASE_CONFIG.anonKey || ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '').trim();
+
+  if (!url) {
+    url = permanentUrl;
+  }
+  if (!anonKey) {
+    anonKey = permanentAnonKey;
+  }
 
   return {
-    url: envUrl,
-    anonKey: envKey,
-    isConnected: false,
+    url,
+    anonKey,
+    isConnected: isConnected || Boolean(url && anonKey),
+    lastSyncedAt,
   };
 }
 
 export function saveSupabaseConfig(config: SupabaseConfig) {
   try {
-    localStorage.setItem(STORAGE_KEY_SUPABASE_CONFIG, JSON.stringify(config));
+    const permanentUrl = PERMANENT_SUPABASE_CONFIG.url || ((import.meta as any).env?.VITE_SUPABASE_URL || '').trim();
+    const permanentAnonKey = PERMANENT_SUPABASE_CONFIG.anonKey || ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '').trim();
+
+    const toSave: SupabaseConfig = {
+      ...config,
+      url: config.url?.trim() || permanentUrl,
+      anonKey: config.anonKey?.trim() || permanentAnonKey,
+    };
+    localStorage.setItem(STORAGE_KEY_SUPABASE_CONFIG, JSON.stringify(toSave));
   } catch (e) {
     console.error('Error saving Supabase config to localStorage:', e);
   }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   LayoutDashboard,
   Menu,
@@ -30,14 +30,19 @@ import {
   MapPin,
   ChevronDown,
   Check,
+  ArrowUp,
+  ArrowDown,
+  EyeOff,
 } from 'lucide-react';
 import { useCms } from '../../context/CmsContext';
 import { ImageUploadField } from './ImageUploadField';
 import { ProductEditModal } from './ProductEditModal';
 import { OrderInvoiceModal } from './OrderInvoiceModal';
 import { SUPABASE_SQL_SCHEMA, testSupabaseConnection } from '../../lib/supabase';
+import { PERMANENT_SUPABASE_CONFIG } from '../../config/supabaseConfig';
+import { DEFAULT_HOME_SECTIONS } from '../../data/defaultCmsData';
 import type { Product } from '../../types';
-import type { CustomerOrder, OrderStatus } from '../../types/cms';
+import type { CustomerOrder, OrderStatus, HomeSectionItem } from '../../types/cms';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -46,6 +51,7 @@ interface AdminDashboardProps {
 type TabType =
   | 'overview'
   | 'orders'
+  | 'sections'
   | 'header'
   | 'hero'
   | 'products'
@@ -67,6 +73,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     updatePolicies,
     updateCategoryBanners,
     updateShowroomStrip,
+    updateHomeSections,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -107,7 +114,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const [localHero, setLocalHero] = useState(data.heroData);
   const [localPolicies, setLocalPolicies] = useState(data.policies);
   const [localNavLinks, setLocalNavLinks] = useState(data.headerNavLinks);
-  const [localCategoryBanners, setLocalCategoryBanners] = useState(data.categoryBanners || []);
+  const [localCategoryBanners, setLocalCategoryBanners] = useState(
+    Array.isArray(data.categoryBanners) && data.categoryBanners.length > 0
+      ? data.categoryBanners
+      : []
+  );
   const [localShowroomStrip, setLocalShowroomStrip] = useState(
     data.showroomStrip || {
       title: 'এক্সক্লুসিভ শোরুম ও স্পেশাল গিফট কালেকশন',
@@ -119,11 +130,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     }
   );
 
+  // Home Sections Ordering & Visibility
+  const [localHomeSections, setLocalHomeSections] = useState<HomeSectionItem[]>(() => {
+    if (data.homeSections && data.homeSections.length > 0) {
+      return [...data.homeSections].sort((a, b) => a.order - b.order);
+    }
+    return DEFAULT_HOME_SECTIONS;
+  });
+
   // Supabase inputs
-  const [dbUrl, setDbUrl] = useState(supabaseConfig.url || '');
-  const [dbKey, setDbKey] = useState(supabaseConfig.anonKey || '');
+  const [dbUrl, setDbUrl] = useState(
+    supabaseConfig.url || PERMANENT_SUPABASE_CONFIG.url || ''
+  );
+  const [dbKey, setDbKey] = useState(
+    supabaseConfig.anonKey || PERMANENT_SUPABASE_CONFIG.anonKey || ''
+  );
   const [dbTestResult, setDbTestResult] = useState<{ success?: boolean; message?: string } | null>(null);
   const [copiedSql, setCopiedSql] = useState(false);
+
+  // Sync inputs if supabaseConfig changes
+  useEffect(() => {
+    if (supabaseConfig.url) {
+      setDbUrl(supabaseConfig.url);
+    } else if (PERMANENT_SUPABASE_CONFIG.url) {
+      setDbUrl(PERMANENT_SUPABASE_CONFIG.url);
+    }
+
+    if (supabaseConfig.anonKey) {
+      setDbKey(supabaseConfig.anonKey);
+    } else if (PERMANENT_SUPABASE_CONFIG.anonKey) {
+      setDbKey(PERMANENT_SUPABASE_CONFIG.anonKey);
+    }
+  }, [supabaseConfig.url, supabaseConfig.anonKey]);
 
   // New Category form state
   const [newCatName, setNewCatName] = useState('');
@@ -226,6 +264,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     notifySuccess('মেনু লিংকসমূহ সফলভাবে সংরক্ষিত হয়েছে!');
   };
 
+  // Section Reordering Handlers
+  const moveSectionUp = (index: number) => {
+    if (index <= 0) return;
+    setLocalHomeSections((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[index - 1];
+      copy[index - 1] = temp;
+      return copy.map((sec, i) => ({ ...sec, order: i + 1 }));
+    });
+  };
+
+  const moveSectionDown = (index: number) => {
+    if (index >= localHomeSections.length - 1) return;
+    setLocalHomeSections((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[index + 1];
+      copy[index + 1] = temp;
+      return copy.map((sec, i) => ({ ...sec, order: i + 1 }));
+    });
+  };
+
+  const toggleSectionEnabled = (sectionId: string) => {
+    setLocalHomeSections((prev) =>
+      prev.map((sec) => (sec.id === sectionId ? { ...sec, enabled: !sec.enabled } : sec))
+    );
+  };
+
+  const moveCategoryBannerUp = (index: number) => {
+    if (index <= 0) return;
+    setLocalCategoryBanners((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[index - 1];
+      copy[index - 1] = temp;
+      return copy;
+    });
+  };
+
+  const moveCategoryBannerDown = (index: number) => {
+    if (index >= localCategoryBanners.length - 1) return;
+    setLocalCategoryBanners((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[index + 1];
+      copy[index + 1] = temp;
+      return copy;
+    });
+  };
+
+  const toggleCategoryBannerEnabled = (bannerId: string) => {
+    setLocalCategoryBanners((prev) =>
+      prev.map((b) => (b.id === bannerId ? { ...b, enabled: b.enabled === false ? true : false } : b))
+    );
+  };
+
+  const handleSaveSections = () => {
+    updateHomeSections(localHomeSections);
+    updateCategoryBanners(localCategoryBanners);
+    notifySuccess('হোমপেজ সেকশন ও ক্যাটাগরির নতুন ক্রম সফলভাবে সংরক্ষিত হয়েছে!');
+  };
+
+  const handleResetSections = () => {
+    if (window.confirm('আপনি কি সেকশনের ক্রম মূল ডিফল্ট অবস্থায় ফিরিয়ে নিতে চান?')) {
+      setLocalHomeSections(DEFAULT_HOME_SECTIONS);
+      updateHomeSections(DEFAULT_HOME_SECTIONS);
+      notifySuccess('সেকশনের ক্রম সফলভাবে ডিফল্ট সেটিংসে রিস্টোর হয়েছে!');
+    }
+  };
+
   // Supabase Test & Save
   const handleTestDb = async () => {
     setDbTestResult({ message: 'কানেকশন টেস্ট করা হচ্ছে...' });
@@ -259,6 +368,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
       setLocalPolicies(data.policies);
       if (data.categoryBanners) setLocalCategoryBanners(data.categoryBanners);
       if (data.showroomStrip) setLocalShowroomStrip(data.showroomStrip);
+      if (data.homeSections) {
+        setLocalHomeSections([...data.homeSections].sort((a, b) => a.order - b.order));
+      }
       notifySuccess(res.message);
     } else {
       notifyError(res.message);
@@ -301,6 +413,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const navTabs = [
     { id: 'overview', name: 'ওভারভিউ ও স্ট্যাটস', icon: LayoutDashboard },
     { id: 'orders', name: `অর্ডার ও কাস্টমার (${ordersList.length})`, icon: ClipboardList, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
+    { id: 'sections', name: 'সেকশন সাজানো (Section Order)', icon: Layers },
     { id: 'header', name: 'হেডার ও মেনু', icon: Menu },
     { id: 'hero', name: 'হিরো ও ব্যানার', icon: Sparkles },
     { id: 'products', name: `প্রোডাক্টস (${data.products.length})`, icon: ShoppingBag },
@@ -1010,7 +1123,294 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           )}
 
           {/* ==================================================== */}
-          {/* 3. HEADER & MENU TAB */}
+          {/* 3. SECTION ORDER & CUSTOMIZATION TAB */}
+          {/* ==================================================== */}
+          {activeTab === 'sections' && (
+            <div className="space-y-6 max-w-4xl">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+                    হোমপেজ সেকশন কাস্টমাইজেশন ও ক্রম নির্ধারণ
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    কোন সেকশনটি আগে (১ম) এবং কোনটি পরে (২য়, ৩য়...) আসবে তা মাউসের ক্লিকেই নিয়ন্ত্রণ করুন
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleResetSections}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 cursor-pointer"
+                    title="ডিফল্ট ক্রম ফিরিয়ে আনুন"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>ডিফল্ট ক্রম</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveSections}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer active:scale-95"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>পরিবর্তন সেভ করুন</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Visual Flow Breadcrumb Card */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
+                <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">
+                  বর্তমান হোমপেজ লেআউট ও সিকোয়েন্স (Live Structure Flow):
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {localHomeSections.map((sec, idx) => (
+                    <React.Fragment key={sec.id}>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition ${
+                          sec.enabled
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-2xs'
+                            : 'bg-slate-100 text-slate-400 border-slate-200 line-through opacity-60'
+                        }`}
+                      >
+                        <span className="w-4 h-4 rounded-full bg-emerald-700 text-white text-[10px] flex items-center justify-center font-bold">
+                          {idx + 1}
+                        </span>
+                        <span>{sec.name.split(' ')[0]}</span>
+                      </span>
+                      {idx < localHomeSections.length - 1 && (
+                        <span className="text-slate-300 font-bold text-xs">➔</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+
+              {/* 1. Main Homepage Sections List */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+                <div className="border-b border-slate-100 pb-3">
+                  <h3 className="text-base font-bold text-slate-900">
+                    ১. মূল হোমপেজ সেকশনসমূহের ক্রম (Home Sections Order)
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    উপরে (▲) বা নিচে (▼) বাটনে ক্লিক করে যেকোনো সেকশন আগে বা পরে নিয়ে যান
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {localHomeSections.map((sec, idx) => {
+                    const isFirst = idx === 0;
+                    const isLast = idx === localHomeSections.length - 1;
+
+                    return (
+                      <div
+                        key={sec.id}
+                        className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
+                          sec.enabled
+                            ? 'bg-slate-50/70 border-slate-200 hover:border-emerald-300'
+                            : 'bg-slate-100/50 border-dashed border-slate-300 opacity-60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-xl bg-slate-900 text-amber-300 font-black text-xs flex items-center justify-center shadow-xs shrink-0">
+                            {idx + 1}
+                          </div>
+
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold text-slate-900">{sec.name}</h4>
+                              {sec.enabled ? (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  সক্রিয়
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200 text-slate-600 border border-slate-300">
+                                  লুকানো
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500 mt-0.5">{sec.description}</p>
+                          </div>
+                        </div>
+
+                        {/* Order & Visibility Controls */}
+                        <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+                          {/* Move Up Button */}
+                          <button
+                            type="button"
+                            onClick={() => moveSectionUp(idx)}
+                            disabled={isFirst}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white text-slate-700 rounded-lg text-xs font-bold border border-slate-200 transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
+                            title="উপরে নিন (Move Up)"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>উপরে</span>
+                          </button>
+
+                          {/* Move Down Button */}
+                          <button
+                            type="button"
+                            onClick={() => moveSectionDown(idx)}
+                            disabled={isLast}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white text-slate-700 rounded-lg text-xs font-bold border border-slate-200 transition cursor-pointer disabled:cursor-not-allowed shadow-2xs"
+                            title="নিচে নিন (Move Down)"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5 text-sky-700" />
+                            <span>নিচে</span>
+                          </button>
+
+                          {/* Enable/Disable Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={() => toggleSectionEnabled(sec.id)}
+                            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer shadow-2xs ${
+                              sec.enabled
+                                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : 'bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-300'
+                            }`}
+                            title={sec.enabled ? 'হাইড বা লুকান' : 'প্রদর্শন করুন'}
+                          >
+                            {sec.enabled ? (
+                              <>
+                                <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                                <span>চালু</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3.5 h-3.5 text-slate-500" />
+                                <span>বন্ধ</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Category Product Showcase Ordering */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+                <div className="border-b border-slate-100 pb-3">
+                  <h3 className="text-base font-bold text-slate-900">
+                    ২. ক্যাটাগরি প্রোডাক্ট শোকেসের ক্রম (Category Showcase Sections)
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    'ক্যাটাগরি অনুযায়ী প্রোডাক্ট শোকেস' সেকশনের ভেতরে কোন ক্যাটাগরিটি আগে (পাঞ্জাবি, আতর, জায়নামাজ ইত্যাদি) আসবে তা সাজান
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {localCategoryBanners.map((banner, idx) => {
+                    const isFirst = idx === 0;
+                    const isLast = idx === localCategoryBanners.length - 1;
+                    const isEnabled = banner.enabled !== false;
+
+                    return (
+                      <div
+                        key={banner.id || banner.categoryId}
+                        className={`p-3.5 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
+                          isEnabled
+                            ? 'bg-slate-50 border-slate-200 hover:border-emerald-300'
+                            : 'bg-slate-100/50 border-dashed border-slate-300 opacity-60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="w-7 h-7 rounded-lg bg-emerald-800 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                            {idx + 1}
+                          </span>
+
+                          <div className="flex items-center gap-2.5">
+                            {banner.image && (
+                              <img
+                                src={banner.image}
+                                alt={banner.banglaTitle}
+                                className="w-10 h-10 object-cover rounded-lg border border-slate-200"
+                              />
+                            )}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                                  {banner.banglaTitle}
+                                </h4>
+                                <span className="text-[10px] font-mono text-slate-400 uppercase">
+                                  ({banner.englishTitle || banner.categoryId})
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 line-clamp-1">{banner.tagline}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Controls */}
+                        <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moveCategoryBannerUp(idx)}
+                            disabled={isFirst}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white text-slate-700 rounded-lg text-xs font-bold border border-slate-200 transition cursor-pointer shadow-2xs"
+                            title="উপরে নিন"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>উপরে</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => moveCategoryBannerDown(idx)}
+                            disabled={isLast}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-white text-slate-700 rounded-lg text-xs font-bold border border-slate-200 transition cursor-pointer shadow-2xs"
+                            title="নিচে নিন"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5 text-sky-700" />
+                            <span>নিচে</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleCategoryBannerEnabled(banner.id)}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer shadow-2xs ${
+                              isEnabled
+                                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : 'bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-300'
+                            }`}
+                          >
+                            {isEnabled ? (
+                              <>
+                                <Eye className="w-3.5 h-3.5 text-emerald-700" />
+                                <span>সক্রিয়</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3.5 h-3.5 text-slate-500" />
+                                <span>লুকানো</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bottom Save Button */}
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSaveSections}
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-bold transition flex items-center gap-2 shadow-xs cursor-pointer active:scale-95"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>হোমপেজ সেকশন বিন্যাস সংরক্ষণ করুন</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ==================================================== */}
+          {/* 4. HEADER & MENU TAB */}
           {/* ==================================================== */}
           {activeTab === 'header' && (
             <div className="space-y-6 max-w-4xl">
@@ -2073,12 +2473,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
               {/* Supabase Connection Form */}
               <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
-                <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
-                  ১. Supabase Credentials
-                </h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      ১. Supabase Credentials (স্থায়ী ক্লাউড কনফিগারেশন)
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      এই ক্রেডেনশিয়াল সকল ডিভাইস, মোবাইল এবং নেটওয়ার্কে স্থায়ীভাবে সংযুক্ত থাকে
+                    </p>
+                  </div>
+                  {PERMANENT_SUPABASE_CONFIG.url ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 w-fit">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      স্থায়ী কনফিগারেশন সক্রিয়
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 w-fit">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                      লোকাল মোড
+                    </span>
+                  )}
+                </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Supabase Project URL</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700">Supabase Project URL</label>
+                    {PERMANENT_SUPABASE_CONFIG.url && (
+                      <span className="text-[11px] font-semibold text-emerald-600">স্থায়ী লিংক ডিফল্ট সংরক্ষিত</span>
+                    )}
+                  </div>
                   <input
                     type="text"
                     value={dbUrl}
@@ -2089,7 +2512,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Supabase Anon Public Key</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700">Supabase Anon Public Key</label>
+                    {PERMANENT_SUPABASE_CONFIG.anonKey && (
+                      <span className="text-[11px] font-semibold text-emerald-600">স্থায়ী অ্যানন কি ডিফল্ট সংরক্ষিত</span>
+                    )}
+                  </div>
                   <textarea
                     rows={2}
                     value={dbKey}
@@ -2127,6 +2555,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   >
                     সেটিংস সেভ করুন
                   </button>
+
+                  {PERMANENT_SUPABASE_CONFIG.url && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDbUrl(PERMANENT_SUPABASE_CONFIG.url);
+                        setDbKey(PERMANENT_SUPABASE_CONFIG.anonKey);
+                        updateSupabaseConfig({
+                          url: PERMANENT_SUPABASE_CONFIG.url,
+                          anonKey: PERMANENT_SUPABASE_CONFIG.anonKey,
+                          isConnected: true,
+                        });
+                        notifySuccess('স্থায়ী ডিফল্ট Supabase ক্রেডেনশিয়াল রিস্টোর করা হয়েছে!');
+                      }}
+                      className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition border border-slate-200 cursor-pointer"
+                      title="স্থায়ী ডিফল্ট মান ফিরিয়ে আনুন"
+                    >
+                      ডিফল্ট রিস্টোর
+                    </button>
+                  )}
 
                   <button
                     type="button"
