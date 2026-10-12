@@ -1,4 +1,4 @@
-import type { CmsStoreData, HomeSectionItem } from '../types/cms';
+import type { CmsStoreData, HomeSectionItem, HeaderNavLink } from '../types/cms';
 import { CATEGORIES, PRODUCTS, TESTIMONIALS } from './products';
 
 export const DEFAULT_HOME_SECTIONS: HomeSectionItem[] = [
@@ -53,6 +53,16 @@ export const DEFAULT_HOME_SECTIONS: HomeSectionItem[] = [
   },
 ];
 
+export const DEFAULT_HEADER_NAV_LINKS: HeaderNavLink[] = [
+  { id: 'all', name: 'সকল পণ্য', categoryId: 'all', enabled: true },
+  { id: 'panjabi', name: 'পাঞ্জাবি ও টুপি', categoryId: 'panjabi', enabled: true },
+  { id: 'attar', name: 'প্রিমিয়াম আতর', categoryId: 'attar', enabled: true },
+  { id: 'janamaz', name: 'তুর্কি জায়নামাজ', categoryId: 'janamaz', enabled: true },
+  { id: 'tasbih', name: 'স্মার্ট তসবিহ', categoryId: 'tasbih', enabled: true },
+  { id: 'organic', name: 'আজওয়া ও মধু', categoryId: 'organic', enabled: true },
+  { id: 'deals', name: 'স্পেশাল ডিল', categoryId: 'deals', showSparkle: true, enabled: true },
+];
+
 export const DEFAULT_CMS_DATA: CmsStoreData = {
   siteSettings: {
     siteName: 'IqrShop',
@@ -77,15 +87,7 @@ export const DEFAULT_CMS_DATA: CmsStoreData = {
       whatsapp: 'https://wa.me/8801700000000',
     },
   },
-  headerNavLinks: [
-    { id: 'all', name: 'সকল পণ্য', categoryId: 'all' },
-    { id: 'panjabi', name: 'পাঞ্জাবি ও টুপি', categoryId: 'panjabi' },
-    { id: 'attar', name: 'প্রিমিয়াম আতর', categoryId: 'attar' },
-    { id: 'janamaz', name: 'তুর্কি জায়নামাজ', categoryId: 'janamaz' },
-    { id: 'tasbih', name: 'স্মার্ট তসবিহ', categoryId: 'tasbih' },
-    { id: 'organic', name: 'আজওয়া ও মধু', categoryId: 'organic' },
-    { id: 'deals', name: 'স্পেশাল ডিল', categoryId: 'deals', showSparkle: true },
-  ],
+  headerNavLinks: DEFAULT_HEADER_NAV_LINKS,
   heroData: {
     badgeText: '১০০% খাঁটি ও হালাল কালেকশন',
     titlePrefix: 'সুন্নতি লাইফস্টাইল ও',

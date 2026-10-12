@@ -102,6 +102,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           categoryBanners: Array.isArray(parsed.categoryBanners) && parsed.categoryBanners.length > 0 ? parsed.categoryBanners : DEFAULT_CMS_DATA.categoryBanners,
           showroomStrip: { ...DEFAULT_CMS_DATA.showroomStrip, ...(parsed.showroomStrip || {}) },
           homeSections: Array.isArray(parsed.homeSections) && parsed.homeSections.length > 0 ? parsed.homeSections : DEFAULT_CMS_DATA.homeSections,
+          headerNavLinks: Array.isArray(parsed.headerNavLinks) && parsed.headerNavLinks.length > 0 ? parsed.headerNavLinks : DEFAULT_CMS_DATA.headerNavLinks,
         };
       }
     } catch (e) {
@@ -147,6 +148,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               policies: { ...prev.policies, ...(cloudData.policies || {}) },
               orders: Array.isArray(cloudData.orders) && cloudData.orders.length > 0 ? cloudData.orders : prev.orders,
               homeSections: Array.isArray(cloudData.homeSections) && cloudData.homeSections.length > 0 ? cloudData.homeSections : prev.homeSections,
+              headerNavLinks: Array.isArray(cloudData.headerNavLinks) && cloudData.headerNavLinks.length > 0 ? cloudData.headerNavLinks : prev.headerNavLinks,
             };
             saveToLocal(merged);
             return merged;

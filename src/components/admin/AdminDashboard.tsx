@@ -40,7 +40,8 @@ import { ProductEditModal } from './ProductEditModal';
 import { OrderInvoiceModal } from './OrderInvoiceModal';
 import { SUPABASE_SQL_SCHEMA, testSupabaseConnection } from '../../lib/supabase';
 import { PERMANENT_SUPABASE_CONFIG } from '../../config/supabaseConfig';
-import { DEFAULT_HOME_SECTIONS } from '../../data/defaultCmsData';
+import { DEFAULT_HOME_SECTIONS, DEFAULT_HEADER_NAV_LINKS } from '../../data/defaultCmsData';
+import { CATEGORIES } from '../../data/products';
 import type { Product } from '../../types';
 import type { CustomerOrder, OrderStatus, HomeSectionItem } from '../../types/cms';
 
@@ -264,6 +265,61 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     notifySuccess('মেনু লিংকসমূহ সফলভাবে সংরক্ষিত হয়েছে!');
   };
 
+  // Header Navigation Reordering & Visibility Handlers
+  const moveNavLinkUp = (index: number) => {
+    if (index <= 0) return;
+    setLocalNavLinks((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[index - 1];
+      copy[index - 1] = temp;
+      return copy;
+    });
+  };
+
+  const moveNavLinkDown = (index: number) => {
+    if (index >= localNavLinks.length - 1) return;
+    setLocalNavLinks((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[index + 1];
+      copy[index + 1] = temp;
+      return copy;
+    });
+  };
+
+  const toggleNavLinkEnabled = (index: number) => {
+    setLocalNavLinks((prev) => {
+      const copy = [...prev];
+      const current = copy[index];
+      const isCurrentlyEnabled = current.enabled !== false;
+      copy[index] = {
+        ...current,
+        enabled: !isCurrentlyEnabled,
+      };
+      return copy;
+    });
+  };
+
+  const toggleNavLinkSparkle = (index: number) => {
+    setLocalNavLinks((prev) => {
+      const copy = [...prev];
+      copy[index] = {
+        ...copy[index],
+        showSparkle: !copy[index].showSparkle,
+      };
+      return copy;
+    });
+  };
+
+  const handleResetNavLinks = () => {
+    if (window.confirm('আপনি কি হেডার মেনুর তালিকা ও ক্রম মূল ডিফল্ট অবস্থায় ফিরিয়ে নিতে চান?')) {
+      setLocalNavLinks(DEFAULT_HEADER_NAV_LINKS);
+      updateHeaderNavLinks(DEFAULT_HEADER_NAV_LINKS);
+      notifySuccess('হেডার মেনু সফলভাবে মূল ডিফল্ট অবস্থায় রিস্টোর হয়েছে!');
+    }
+  };
+
   // Section Reordering Handlers
   const moveSectionUp = (index: number) => {
     if (index <= 0) return;
@@ -366,6 +422,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
       setLocalSettings(data.siteSettings);
       setLocalHero(data.heroData);
       setLocalPolicies(data.policies);
+      if (data.headerNavLinks) setLocalNavLinks(data.headerNavLinks);
       if (data.categoryBanners) setLocalCategoryBanners(data.categoryBanners);
       if (data.showroomStrip) setLocalShowroomStrip(data.showroomStrip);
       if (data.homeSections) {
@@ -1513,48 +1570,188 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 </div>
 
                 {/* Navigation Links Manager */}
-                <div className="space-y-3 pt-4 border-t border-slate-100">
-                  <h4 className="text-sm font-bold text-slate-900">হেডার মেনু আইটেমসমূহ</h4>
-                  <div className="space-y-2">
-                    {localNavLinks.map((link, idx) => (
-                      <div
-                        key={link.id || idx}
-                        className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200"
+                <div className="space-y-4 pt-6 border-t border-slate-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-base font-black text-slate-900 flex items-center gap-2">
+                        <span>হেডার নেভিগেশন মেনু (ক্রম ও ভিজিবিলিটি কন্ট্রোল)</span>
+                        <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                          মোট: {localNavLinks.length}টি
+                        </span>
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        মেনুর বাটনগুলো আগে-পিছে সাজান, প্রয়োজনীয় মেনু লুকান বা প্রদর্শন করুন
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleResetNavLinks}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                        title="ডিফল্ট মেনু রিস্টোর করুন"
                       >
-                        <input
-                          type="text"
-                          value={link.name}
-                          onChange={(e) => {
-                            const copy = [...localNavLinks];
-                            copy[idx].name = e.target.value;
-                            setLocalNavLinks(copy);
-                          }}
-                          className="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs font-bold focus:outline-none focus:border-emerald-600"
-                        />
-                        <span className="text-[11px] text-slate-400 font-mono px-2">ID: {link.categoryId || link.id}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setLocalNavLinks(localNavLinks.filter((_, i) => i !== idx));
-                          }}
-                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>ডিফল্ট মেনু</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newId = `nav-${Date.now()}`;
+                          setLocalNavLinks([
+                            ...localNavLinks,
+                            { id: newId, name: 'নতুন মেনু', categoryId: 'all', enabled: true },
+                          ]);
+                        }}
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>নতুন মেনু যোগ</span>
+                      </button>
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newId = `nav-${Date.now()}`;
-                      setLocalNavLinks([...localNavLinks, { id: newId, name: 'নতুন মেনু', categoryId: 'all' }]);
-                    }}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer pt-1"
-                  >
-                    + নতুন মেনু আইটেম যোগ করুন
-                  </button>
+                  <div className="space-y-2.5">
+                    {localNavLinks.map((link, idx) => {
+                      const isEnabled = link.enabled !== false;
+                      return (
+                        <div
+                          key={link.id || idx}
+                          className={`p-3 rounded-2xl border transition flex flex-col md:flex-row md:items-center justify-between gap-3 ${
+                            isEnabled
+                              ? 'bg-slate-50 border-slate-200 hover:border-slate-300'
+                              : 'bg-slate-100/70 border-dashed border-slate-300 opacity-70'
+                          }`}
+                        >
+                          {/* Order Index & Name Input */}
+                          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                            <span className="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-black flex items-center justify-center shrink-0 shadow-2xs">
+                              #{idx + 1}
+                            </span>
+                            
+                            <div className="flex-1 min-w-0">
+                              <input
+                                type="text"
+                                value={link.name}
+                                onChange={(e) => {
+                                  const copy = [...localNavLinks];
+                                  copy[idx] = { ...copy[idx], name: e.target.value };
+                                  setLocalNavLinks(copy);
+                                }}
+                                placeholder="মেনুর নাম লিখুন..."
+                                className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm font-bold focus:outline-none focus:border-emerald-600 transition"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Category Link Selector & Options */}
+                          <div className="flex flex-wrap items-center gap-2 shrink-0">
+                            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl px-2.5 py-1 text-xs">
+                              <span className="text-slate-400 font-semibold text-[11px]">ক্যাটাগরি:</span>
+                              <select
+                                value={link.categoryId || link.id || 'all'}
+                                onChange={(e) => {
+                                  const copy = [...localNavLinks];
+                                  copy[idx] = { ...copy[idx], categoryId: e.target.value };
+                                  setLocalNavLinks(copy);
+                                }}
+                                className="bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer text-xs"
+                              >
+                                {CATEGORIES.map((cat) => (
+                                  <option key={cat.id} value={cat.id}>
+                                    {cat.name} ({cat.id})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Sparkle Toggle */}
+                            <button
+                              type="button"
+                              onClick={() => toggleNavLinkSparkle(idx)}
+                              className={`p-1.5 rounded-xl border text-xs font-bold transition cursor-pointer flex items-center gap-1 ${
+                                link.showSparkle
+                                  ? 'bg-amber-50 border-amber-300 text-amber-700'
+                                  : 'bg-white border-slate-200 text-slate-400 hover:text-slate-600'
+                              }`}
+                              title={link.showSparkle ? 'ঝিলমিল ব্যাজ সক্রিয় (বন্ধ করতে ক্লিক করুন)' : 'ঝিলমিল ব্যাজ বন্ধ (চালু করতে ক্লিক করুন)'}
+                            >
+                              <Sparkles className="w-3.5 h-3.5" />
+                              <span className="text-[10px] hidden sm:inline">ঝিলমিল</span>
+                            </button>
+
+                            {/* Visibility Toggle Button (লুকানো / দেখানো) */}
+                            <button
+                              type="button"
+                              onClick={() => toggleNavLinkEnabled(idx)}
+                              className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                                isEnabled
+                                  ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
+                                  : 'bg-rose-50 border-rose-300 text-rose-700 hover:bg-rose-100'
+                              }`}
+                              title={isEnabled ? 'ক্লিক করে এই মেনু লুকান' : 'ক্লিক করে এই মেনু দৃশ্যমান করুন'}
+                            >
+                              {isEnabled ? (
+                                <>
+                                  <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>দৃশ্যমান</span>
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="w-3.5 h-3.5 text-rose-600" />
+                                  <span>লুকানো</span>
+                                </>
+                              )}
+                            </button>
+
+                            {/* Reorder Buttons (আগে ও পিছে) */}
+                            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5">
+                              <button
+                                type="button"
+                                onClick={() => moveNavLinkUp(idx)}
+                                disabled={idx === 0}
+                                className={`p-1 rounded-lg transition ${
+                                  idx === 0
+                                    ? 'text-slate-300 cursor-not-allowed'
+                                    : 'text-slate-700 hover:bg-slate-100 cursor-pointer active:scale-95'
+                                }`}
+                                title="আগে নিন (Move Up / Left)"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveNavLinkDown(idx)}
+                                disabled={idx === localNavLinks.length - 1}
+                                className={`p-1 rounded-lg transition ${
+                                  idx === localNavLinks.length - 1
+                                    ? 'text-slate-300 cursor-not-allowed'
+                                    : 'text-slate-700 hover:bg-slate-100 cursor-pointer active:scale-95'
+                                }`}
+                                title="পিছে নিন (Move Down / Right)"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Delete Button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`'${link.name}' মেনুটি মুছে ফেলতে চান?`)) {
+                                  setLocalNavLinks(localNavLinks.filter((_, i) => i !== idx));
+                                }
+                              }}
+                              className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl border border-transparent hover:border-rose-200 transition cursor-pointer"
+                              title="মেনু মুছে ফেলুন"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Save Button */}

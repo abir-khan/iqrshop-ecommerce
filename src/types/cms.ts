@@ -58,6 +58,7 @@ export interface HeaderNavLink {
   categoryId?: string;
   url?: string;
   showSparkle?: boolean;
+  enabled?: boolean;
 }
 
 export interface HeroFeatureCard {

@@ -166,7 +166,9 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="border-t border-zinc-100 bg-zinc-50/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center justify-start sm:justify-center gap-2 sm:gap-4 text-[13px] sm:text-[13.5px] font-semibold text-zinc-700 py-2 overflow-x-auto no-scrollbar">
-            {headerNavLinks.map((link) => {
+            {headerNavLinks
+              .filter((link) => link.enabled !== false)
+              .map((link) => {
               const targetCategory = link.categoryId || link.id;
               const isActive = activeCategory === targetCategory;
 
