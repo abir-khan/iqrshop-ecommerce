@@ -80,7 +80,7 @@ const CATEGORY_BANNERS: Record<string, CategoryBannerConfig> = {
     id: 'banner-organic',
     categoryId: 'organic',
     englishTitle: 'SUNNAH FOODS',
-    banglaTitle: 'মদিনার আজওয়া খেজুর ও চাকের মধু',
+    banglaTitle: 'খেজুর ও চাকের মধু',
     tagline: 'শতভাগ প্রাকৃতিক, অপরিশোধিত ও পুষ্টিকর সুন্নাহ ডায়েট',
     badge: '100% NATURAL & ORGANIC',
     image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80',
