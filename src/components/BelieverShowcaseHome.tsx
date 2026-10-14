@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ShowcaseHeroBanner } from './ShowcaseHeroBanner';
-import { ShowcaseCategorySection } from './ShowcaseCategorySection';
 import { CustomerReviews } from './CustomerReviews';
 import { TrustBar } from './TrustBar';
 import { Newsletter } from './Newsletter';
 import { ProductComboChart } from './ProductComboChart';
-import { createComboProductItem } from '../lib/comboChartService';
+import { ProductCard } from './ProductCard';
+import { createComboProductItem, fetchActiveComboCharts } from '../lib/comboChartService';
 import { useCms } from '../context/CmsContext';
 import { DEFAULT_HOME_SECTIONS } from '../data/defaultCmsData';
-import type { Product } from '../types';
-import type { CategoryBannerConfig } from './ShowcaseCategoryBanner';
+import type { Product, ComboChart } from '../types';
+import { Sparkles, ArrowRight, ChevronDown, Grid } from 'lucide-react';
 
 interface BelieverShowcaseHomeProps {
   onSelectCategory: (categoryId: string) => void;
@@ -18,93 +18,6 @@ interface BelieverShowcaseHomeProps {
   wishlistIds: string[];
   onToggleWishlist: (productId: string) => void;
 }
-
-const CATEGORY_BANNERS: Record<string, CategoryBannerConfig> = {
-  panjabi: {
-    id: 'banner-panjabi',
-    categoryId: 'panjabi',
-    englishTitle: 'PANJABI',
-    banglaTitle: 'সুন্নতি পাঞ্জাবি ও টুপি কালেকশন',
-    tagline: '১০০% সফট ফাইন কটন ও জ্যাকার্ড উইভিং লাক্সারি ডিজাইন',
-    badge: 'LUXURY COLLECTION',
-    image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=800&auto=format&fit=crop&q=80',
-    bgGradient: 'bg-gradient-to-r from-[#f5ede2] via-[#ede0cf] to-[#decbb3]',
-    accentColor: '#78350f',
-    textColor: '#2c1e11',
-    badgeBg: '#fef3c7',
-    buttonText: 'পাঞ্জাবি কালেকশন দেখুন',
-  },
-  attar: {
-    id: 'banner-attar',
-    categoryId: 'attar',
-    englishTitle: 'ATTAR & OUD',
-    banglaTitle: 'প্রিমিয়াম অ্যালকোহলমুক্ত আতর',
-    tagline: 'রাজকীয় এরাবিয়ান ওউদ ও শান্ত কস্তুরীর দীর্ঘস্থায়ী মনমাতানো সুবাস',
-    badge: '100% PURE FRAGRANCE',
-    image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&auto=format&fit=crop&q=80',
-    bgGradient: 'bg-gradient-to-r from-[#e6f9f0] via-[#d1f4e3] to-[#b6ebd0]',
-    accentColor: '#065f46',
-    textColor: '#064e3b',
-    badgeBg: '#d1fae5',
-    buttonText: 'আতর কালেকশন দেখুন',
-  },
-  janamaz: {
-    id: 'banner-janamaz',
-    categoryId: 'janamaz',
-    englishTitle: 'JANAMAZ',
-    banglaTitle: 'তুর্কি অর্থোপেডিক জায়নামাজ',
-    tagline: 'হাঁটু ও জয়েন্টের আরামদায়ক কুশনিং ও সফট ভেলভেট ফ্যাব্রিক',
-    badge: 'COMFORT IN SALAH',
-    image: 'https://images.unsplash.com/photo-1584286595398-a59f21d313f5?w=800&auto=format&fit=crop&q=80',
-    bgGradient: 'bg-gradient-to-r from-[#e0f2fe] via-[#bae6fd] to-[#93c5fd]',
-    accentColor: '#0369a1',
-    textColor: '#0c4a6e',
-    badgeBg: '#e0f2fe',
-    buttonText: 'জায়নামাজ দেখুন',
-  },
-  tasbih: {
-    id: 'banner-tasbih',
-    categoryId: 'tasbih',
-    englishTitle: 'SMART TASBIH',
-    banglaTitle: 'ডিজিটাল স্মার্ট তসবিহ ও গ্যাজেট',
-    tagline: 'ভাইব্রেশন অ্যালার্ট, এলইডি ডিসপ্লে ও প্রাকৃতিক চন্দন কাঠ',
-    badge: 'SMART ZIKR GADGET',
-    image: 'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=800&auto=format&fit=crop&q=80',
-    bgGradient: 'bg-gradient-to-r from-[#f1f5f9] via-[#e2e8f0] to-[#cbd5e1]',
-    accentColor: '#334155',
-    textColor: '#1e293b',
-    badgeBg: '#e2e8f0',
-    buttonText: 'তসবিহ কালেকশন দেখুন',
-  },
-  organic: {
-    id: 'banner-organic',
-    categoryId: 'organic',
-    englishTitle: 'SUNNAH FOODS',
-    banglaTitle: 'খেজুর ও চাকের মধু',
-    tagline: 'শতভাগ প্রাকৃতিক, অপরিশোধিত ও পুষ্টিকর সুন্নাহ ডায়েট',
-    badge: '100% NATURAL & ORGANIC',
-    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80',
-    bgGradient: 'bg-gradient-to-r from-[#fef3c7] via-[#fde68a] to-[#fcd34d]',
-    accentColor: '#92400e',
-    textColor: '#78350f',
-    badgeBg: '#fef9c3',
-    buttonText: 'সুন্নাহ ফুড দেখুন',
-  },
-  gift: {
-    id: 'banner-gift',
-    categoryId: 'gift',
-    englishTitle: 'EXCLUSIVE COMBO',
-    banglaTitle: 'এক্সক্লুসিভ কম্বো ও গিফট প্যাকেজ',
-    tagline: 'পাঞ্জাবি, আতর, তসবিহ ও জায়নামাজের আকর্ষণীয় গিফট বক্স',
-    badge: 'SAVE UP TO 25%',
-    image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800&auto=format&fit=crop&q=80',
-    bgGradient: 'bg-gradient-to-r from-[#fae8ff] via-[#f5d0fe] to-[#e879f9]',
-    accentColor: '#86198f',
-    textColor: '#701a75',
-    badgeBg: '#fae8ff',
-    buttonText: 'কম্বো অফার দেখুন',
-  },
-};
 
 export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
   onSelectCategory,
@@ -115,16 +28,62 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
 }) => {
   const { data } = useCms();
   const products = data.products;
-  const categoryBanners = (data.categoryBanners && data.categoryBanners.length > 0)
-    ? data.categoryBanners
-    : Object.values(CATEGORY_BANNERS);
+
+  // Active combo charts loaded from DB/cache to resolve the featured combo
+  const [comboCharts, setComboCharts] = useState<ComboChart[]>([]);
+  const [showAllProducts, setShowAllProducts] = useState(false);
+
+  useEffect(() => {
+    fetchActiveComboCharts().then((charts) => {
+      setComboCharts(charts);
+    });
+  }, []);
+
+  // Determine active featured combo based on Admin's selection (siteSettings.featuredComboId)
+  const featuredCombo = useMemo(() => {
+    const targetId = data.siteSettings.featuredComboId;
+    if (targetId && comboCharts.length > 0) {
+      const found = comboCharts.find((c) => c.id === targetId);
+      if (found) return found;
+    }
+    return comboCharts[0] || null;
+  }, [data.siteSettings.featuredComboId, comboCharts]);
+
+  // The category belonging to the selected combo
+  const featuredCategoryId = featuredCombo?.categoryId || 'attar';
+  const featuredCategoryObj = data.categories.find((c) => c.id === featuredCategoryId) || {
+    id: featuredCategoryId,
+    name: 'প্রিমিয়াম কালেকশন',
+    icon: '✨',
+  };
+
+  // Products belonging exclusively to this featured combo's category
+  const featuredCategoryProducts = useMemo(() => {
+    return products.filter((p) => {
+      if (featuredCategoryId === 'gift' || featuredCategoryId === 'deals') {
+        return p.category === 'gift' || p.category === 'deals';
+      }
+      return p.category === featuredCategoryId;
+    });
+  }, [products, featuredCategoryId]);
+
+  // Initial products limit (default: 8, configured in siteSettings)
+  const initialLimit = data.siteSettings.featuredProductsLimit || 8;
+  const displayedProducts = showAllProducts
+    ? featuredCategoryProducts
+    : featuredCategoryProducts.slice(0, initialLimit);
+
+  // Remaining categories for the compact quick explore grid
+  const otherCategories = useMemo(() => {
+    return data.categories.filter((c) => c.id !== 'all' && c.id !== featuredCategoryId);
+  }, [data.categories, featuredCategoryId]);
 
   const rawSections = (data.homeSections && data.homeSections.length > 0)
     ? [...data.homeSections].sort((a, b) => a.order - b.order)
     : DEFAULT_HOME_SECTIONS;
 
   // Ensure combo_chart is rendered even if older cache exists
-  const activeHomeSections = React.useMemo(() => {
+  const activeHomeSections = useMemo(() => {
     const list = [...rawSections];
     if (!list.some((s) => s.id === 'combo_chart')) {
       const insertIdx = list.findIndex((s) => s.id === 'category_sections');
@@ -168,6 +127,7 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
                     </p>
                   </div>
                   <ProductComboChart
+                    activeComboId={data.siteSettings.featuredComboId}
                     onSelectProduct={onQuickView}
                     onBuyCombo={(chart, prods) => {
                       if (prods.length > 0) {
@@ -180,33 +140,107 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
 
             case 'category_sections':
               return (
-                <div key="category_sections" className="space-y-4 sm:space-y-12 lg:space-y-16">
-                  {categoryBanners
-                    .filter((banner) => banner.enabled !== false)
-                    .map((banner) => {
-                      const categoryProducts = products.filter((p) => {
-                        if (banner.categoryId === 'gift') {
-                          return p.category === 'gift' || p.category === 'deals';
-                        }
-                        return p.category === banner.categoryId;
-                      });
+                <div key="category_sections" className="space-y-6 sm:space-y-10">
+                  {/* 1. Featured Category Products Section (Directly matching Admin's chosen combo) */}
+                  <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+                    {/* Section Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-zinc-200/80 pb-3 sm:pb-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] sm:text-xs font-bold">
+                            <Sparkles className="w-3 h-3 text-amber-500" />
+                            <span>{featuredCategoryObj.name} স্পেশাল কালেকশন</span>
+                          </span>
+                          <span className="text-xs text-zinc-500 font-medium">
+                            ({featuredCategoryProducts.length} টি পণ্য)
+                          </span>
+                        </div>
+                        <h3 className="text-lg sm:text-2xl font-black text-zinc-900 tracking-tight">
+                          {featuredCombo ? `${featuredCombo.title} — সংশ্লিষ্ট কালেকশন` : 'নির্বাচিত সেরা পণ্যসমূহ'}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-zinc-500">
+                          এই অফার প্যাকেজের সাথে মানানসই ও জনপ্রিয় শীর্ষ পণ্যগুলো এক নজরে দেখুন
+                        </p>
+                      </div>
 
-                      if (categoryProducts.length === 0) return null;
+                      <button
+                        onClick={() => onSelectCategory(featuredCategoryId)}
+                        className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-800 hover:text-emerald-950 transition cursor-pointer self-start sm:self-auto group"
+                      >
+                        <span>এই ক্যাটাগরির ফিল্টার পেজ</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </div>
 
-                      return (
-                        <ShowcaseCategorySection
-                          key={banner.id || banner.categoryId}
-                          bannerConfig={banner}
-                          products={categoryProducts}
-                          onSelectCategory={onSelectCategory}
+                    {/* Products Grid (2 cols on mobile, 4 cols on desktop) */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-5 lg:gap-6">
+                      {displayedProducts.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
                           onBuyNow={onBuyNow}
                           onQuickView={onQuickView}
-                          wishlistIds={wishlistIds}
+                          isWishlisted={wishlistIds.includes(product.id)}
                           onToggleWishlist={onToggleWishlist}
-                          maxDisplay={4}
                         />
-                      );
-                    })}
+                      ))}
+                    </div>
+
+                    {/* Show More Expander if products exceed initial limit */}
+                    {featuredCategoryProducts.length > initialLimit && !showAllProducts && (
+                      <div className="flex justify-center pt-2">
+                        <button
+                          onClick={() => setShowAllProducts(true)}
+                          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#13231B] hover:bg-[#1f372a] text-white text-xs sm:text-sm font-bold shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer group"
+                        >
+                          <span>আরও পণ্য দেখুন (+{featuredCategoryProducts.length - initialLimit}টি বাকি)</span>
+                          <ChevronDown className="w-4 h-4 text-amber-300 group-hover:translate-y-0.5 transition-transform" />
+                        </button>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* 2. Explore Other Categories (Compact, Non-Intrusive, Mobile-Friendly) */}
+                  <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                    <div className="bg-[#f7f8f8] border border-zinc-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Grid className="w-4 h-4 text-emerald-800" />
+                          <h4 className="text-sm sm:text-base font-black text-zinc-900">
+                            অন্যান্য ক্যাটাগরি এক্সপ্লোর করুন
+                          </h4>
+                        </div>
+                        <span className="text-[11px] sm:text-xs text-zinc-500 font-medium">
+                          এক ক্লিকে পছন্দের ক্যাটাগরিতে যান
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
+                        {otherCategories.map((cat) => {
+                          const catProductCount = products.filter((p) => p.category === cat.id).length;
+                          return (
+                            <button
+                              key={cat.id}
+                              onClick={() => onSelectCategory(cat.id)}
+                              className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white border border-zinc-200 hover:border-emerald-700/50 hover:shadow-xs transition-all cursor-pointer text-left group active:scale-95"
+                            >
+                              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-900 flex items-center justify-center text-base sm:text-lg group-hover:scale-110 transition-transform shrink-0">
+                                {cat.icon || '🛍️'}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <span className="block text-xs sm:text-[13px] font-bold text-zinc-900 group-hover:text-emerald-800 transition-colors truncate">
+                                  {cat.name}
+                                </span>
+                                <span className="text-[10px] text-zinc-400 font-medium block">
+                                  {catProductCount > 0 ? `${catProductCount}টি পণ্য` : 'কালেকশন দেখুন'}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </section>
                 </div>
               );
 
@@ -238,3 +272,4 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
     </div>
   );
 };
+

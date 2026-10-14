@@ -307,6 +307,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     }
   };
 
+  const handleSetFeaturedCombo = (comboId: string) => {
+    const updated = {
+      ...localSettings,
+      featuredComboId: comboId,
+    };
+    setLocalSettings(updated);
+    updateSiteSettings(updated);
+    const chart = comboChartsList.find((c) => c.id === comboId);
+    notifySuccess(`"${chart?.title || 'কম্বো'}" সফলভাবে হোমপেজে ফোকাসড কম্বো হিসেবে নির্বাচিত হয়েছে!`);
+  };
+
   // Helper for notification
   const notifySuccess = (msg: string) => {
     setSuccessNotice(msg);
@@ -1390,6 +1401,79 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 </div>
               </div>
 
+              {/* ⭐ Featured Homepage Combo & Category Control Panel */}
+              <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border-2 border-emerald-600/40 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1 px-2.5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs">
+                        ⭐ ফোকাসড কম্বো
+                      </span>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900">
+                        হোমপেজে ফোকাসড কম্বো ও ক্যাটাগরি প্রোডাক্ট নিয়ন্ত্রণ
+                      </h3>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-600">
+                      এখানে যে কম্বোটি নির্বাচন করবেন, হোমপেজে শুধু সেটি শীর্ষে প্রদর্শিত হবে এবং নিচে স্বয়ংক্রিয়ভাবে সেই ক্যাটাগরির পণ্যগুলো লোড হবে। বাকি ক্যাটাগরিগুলো নিচে কমপ্যাক্ট গ্রিডে সংরক্ষিত থাকবে।
+                    </p>
+                  </div>
+
+                  {/* Dropdown selectors */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-slate-700 block">কম্বো প্যাকেজ নির্বাচন করুন:</label>
+                      <select
+                        value={localSettings.featuredComboId || comboChartsList[0]?.id || ''}
+                        onChange={(e) => {
+                          handleSetFeaturedCombo(e.target.value);
+                        }}
+                        className="bg-white border-2 border-emerald-600 rounded-xl px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-900 shadow-xs focus:outline-none cursor-pointer"
+                      >
+                        {comboChartsList.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.title} — ৳{c.price} ({c.categoryId || 'সকল'})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-slate-700 block">প্রাথমিক পণ্য প্রদর্শনের সংখ্যা:</label>
+                      <select
+                        value={localSettings.featuredProductsLimit || 8}
+                        onChange={(e) => {
+                          const limit = Number(e.target.value);
+                          const updated = { ...localSettings, featuredProductsLimit: limit };
+                          setLocalSettings(updated);
+                          updateSiteSettings(updated);
+                          notifySuccess(`হোমপেজে প্রাথমিক পণ্য প্রদর্শনের সংখ্যা ${limit} নির্ধারণ করা হয়েছে!`);
+                        }}
+                        className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-slate-900 shadow-xs focus:outline-none cursor-pointer"
+                      >
+                        <option value={4}>৪টি পণ্য (Ultra-Compact)</option>
+                        <option value={6}>৬টি পণ্য</option>
+                        <option value={8}>৮টি পণ্য (প্রস্তাবিত)</option>
+                        <option value={12}>১২টি পণ্য</option>
+                        <option value={100}>সবগুলো পণ্য (No Limit)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Active Status Strip */}
+                {comboChartsList.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-emerald-700/20 text-xs">
+                    <span className="font-semibold text-slate-600">বর্তমান হোমপেজ স্ট্যাটাস:</span>
+                    <span className="font-bold text-emerald-900 bg-white border border-emerald-300 px-3 py-1 rounded-full shadow-2xs">
+                      🎯 ফোকাসড কম্বো: <strong>{comboChartsList.find(c => c.id === (localSettings.featuredComboId || comboChartsList[0]?.id))?.title || 'ডিফল্ট কম্বো'}</strong>
+                    </span>
+                    <span className="font-bold text-teal-900 bg-white border border-teal-300 px-3 py-1 rounded-full shadow-2xs">
+                      📁 সংশ্লিষ্ট ক্যাটাগরি: <strong>{comboChartsList.find(c => c.id === (localSettings.featuredComboId || comboChartsList[0]?.id))?.categoryId || 'attar'}</strong>
+                    </span>
+                  </div>
+                )}
+              </div>
+
               {/* Combo Charts List */}
               {comboChartsList.length === 0 ? (
                 <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
@@ -1609,6 +1693,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {/* Feature On Homepage Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleSetFeaturedCombo(chart.id)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border cursor-pointer ${
+                                (localSettings.featuredComboId || comboChartsList[0]?.id) === chart.id
+                                  ? 'bg-amber-100 text-amber-900 border-amber-400 ring-2 ring-amber-400/30 shadow-xs'
+                                  : 'bg-slate-100 hover:bg-amber-50 hover:text-amber-800 text-slate-700 border-slate-200'
+                              }`}
+                              title="হোমপেজে এই কম্বোটি শীর্ষে দেখান এবং এর ক্যাটাগরি প্রোডাক্ট লোড করুন"
+                            >
+                              <Star className={`w-3.5 h-3.5 ${(localSettings.featuredComboId || comboChartsList[0]?.id) === chart.id ? 'fill-amber-500 text-amber-500' : 'text-slate-400'}`} />
+                              <span>{(localSettings.featuredComboId || comboChartsList[0]?.id) === chart.id ? 'হোমপেজে ফোকাসড' : 'হোমপেজে দেখান'}</span>
+                            </button>
+
                             <button
                               type="button"
                               onClick={() => handleOpenEditCombo(chart)}

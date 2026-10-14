@@ -50,6 +50,8 @@ export interface SiteSettings {
     youtube: string;
     whatsapp: string;
   };
+  featuredComboId?: string;
+  featuredProductsLimit?: number;
 }
 
 export interface HeaderNavLink {

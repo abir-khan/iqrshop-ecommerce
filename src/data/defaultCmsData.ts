@@ -18,8 +18,8 @@ export const DEFAULT_HOME_SECTIONS: HomeSectionItem[] = [
   },
   {
     id: 'category_sections',
-    name: 'ক্যাটাগরি অনুযায়ী প্রোডাক্ট শোকেস',
-    description: 'পাঞ্জাবি, আতর, জায়নামাজ ইত্যাদির আকর্ষণীয় শোকেস সেকশন',
+    name: 'ফোকাসড কম্বো ক্যাটাগরি প্রোডাক্ট কালেকশন',
+    description: 'নির্বাচিত কম্বোর সংশ্লিষ্ট প্রোডাক্ট এবং অন্যান্য ক্যাটাগরি এক্সপ্লোরার (মোবাইল অপ্টিমাইজড)',
     enabled: true,
     order: 3,
   },
@@ -79,6 +79,8 @@ export const DEFAULT_CMS_DATA: CmsStoreData = {
       youtube: 'https://youtube.com',
       whatsapp: 'https://wa.me/8801700000000',
     },
+    featuredComboId: 'combo-ramadan-special',
+    featuredProductsLimit: 8,
   },
   headerNavLinks: DEFAULT_HEADER_NAV_LINKS,
   heroData: {
