@@ -9,13 +9,16 @@ import {
   Eye,
   CheckCircle2,
   ArrowUpDown,
-  ChevronDown
+  ChevronDown,
+  Zap,
+  Check
 } from 'lucide-react';
 import { ProductGridSkeleton } from './SkeletonLoader';
 import { ProductComboChart } from './ProductComboChart';
 import { createComboProductItem } from '../lib/comboChartService';
 import type { Product } from '../types';
 import { useCms } from '../context/CmsContext';
+import { useCart } from '../context/CartContext';
 
 interface CategoryViewProps {
   initialCategory: string;
@@ -35,6 +38,8 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
   onToggleWishlist,
 }) => {
   const { data } = useCms();
+  const { addToCart } = useCart();
+  const [addedCardId, setAddedCardId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'all');
   const [selectedSize, setSelectedSize] = useState<string>('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
@@ -133,6 +138,14 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
   const handleOrderClick = (product: Product) => {
     const chosenSize = cardSizes[product.id] || (product.sizes ? product.sizes[0] : undefined);
     onBuyNow(product, chosenSize);
+  };
+
+  const handleCardAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.stopPropagation();
+    const chosenSize = cardSizes[product.id] || (product.sizes ? product.sizes[0] : undefined);
+    addToCart(product, chosenSize);
+    setAddedCardId(product.id);
+    setTimeout(() => setAddedCardId(null), 1500);
   };
 
   const resetFilters = () => {
@@ -463,10 +476,10 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
                       <div
                         key={product.id}
                         onClick={() => onQuickView(product)}
-                        className="bg-white rounded-xl sm:rounded-3xl border border-zinc-200/80 hover:border-emerald-700/50 p-1 sm:p-3.5 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-md transition-all flex flex-col justify-between group h-full cursor-pointer active:scale-[0.99] min-w-0"
+                        className="bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 hover:border-emerald-700/50 p-2 sm:p-3.5 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group h-full cursor-pointer active:scale-[0.99] min-w-0"
                       >
                         {/* Product Image Box (Consistent 1:1 Aspect Ratio) */}
-                        <div className="relative aspect-square w-full bg-[#f4f5f6] rounded-lg sm:rounded-2xl overflow-hidden mb-1 sm:mb-2 border border-stone-200/70 shadow-2xs flex items-center justify-center">
+                        <div className="relative aspect-square w-full bg-[#f4f5f6] rounded-xl sm:rounded-2xl overflow-hidden mb-1.5 sm:mb-2.5 border border-stone-200/70 shadow-2xs flex items-center justify-center">
                           <img
                             src={product.image}
                             alt={product.name}
@@ -474,31 +487,31 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
                           />
 
                           {/* Top Badges (Sleek, Minimal Non-Intrusive Pills) */}
-                          <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5 z-10">
+                          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 z-10">
                             {product.badge && (
-                              <span className="bg-[#13231B]/90 backdrop-blur-2xs text-amber-300 text-[7px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
+                              <span className="bg-[#13231B]/90 backdrop-blur-2xs text-amber-300 text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
                                 {product.badge}
                               </span>
                             )}
                             {product.originalPrice && product.originalPrice > product.price && (
-                              <span className="bg-rose-600/90 backdrop-blur-2xs text-white text-[7px] sm:text-[9.5px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
+                              <span className="bg-rose-600/90 backdrop-blur-2xs text-white text-[8px] sm:text-[9.5px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
                                 ৳{product.originalPrice - product.price} ছাড়
                               </span>
                             )}
                           </div>
 
                           {/* Wishlist & Quick View */}
-                          <div className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 flex flex-col gap-0.5 sm:gap-1 z-10">
+                          <div className="absolute top-1.5 right-1.5 flex flex-col gap-1 z-10">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onToggleWishlist(product.id);
                               }}
-                              className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/95 hover:bg-white text-zinc-700 flex items-center justify-center shadow-xs transition cursor-pointer active:scale-90 active:brightness-90"
+                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/95 hover:bg-white text-zinc-700 flex items-center justify-center shadow-xs transition cursor-pointer active:scale-90"
                               title="উইশলিস্টে যোগ করুন"
                             >
                               <Heart
-                                className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 ${
+                                className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${
                                   isWishlisted ? 'text-rose-600 fill-rose-600' : ''
                                 }`}
                               />
@@ -508,41 +521,40 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
                                 e.stopPropagation();
                                 onQuickView(product);
                               }}
-                              className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/95 hover:bg-white text-zinc-700 flex items-center justify-center shadow-xs transition cursor-pointer active:scale-90 active:brightness-90"
+                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/95 hover:bg-white text-zinc-700 flex items-center justify-center shadow-xs transition cursor-pointer active:scale-90"
                               title="কুইক ভিউ"
                             >
-                              <Eye className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
+                              <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                             </button>
                           </div>
                         </div>
 
                         {/* Product Details */}
-                        <div className="space-y-0.5 sm:space-y-1.5 flex-1 flex flex-col justify-between min-w-0 w-full overflow-hidden px-0.5">
-                          <div className="min-w-0 w-full overflow-hidden">
-                            {/* Rating & Stock Status (Combined in 1 Single Line) */}
-                            <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0 w-full overflow-hidden">
-                              <div className="flex items-center gap-0.5 text-[8px] sm:text-xs text-amber-500 font-bold shrink-0 whitespace-nowrap">
+                        <div className="space-y-1 sm:space-y-1.5 flex-1 flex flex-col justify-between min-w-0 w-full overflow-hidden">
+                          <div className="space-y-1 min-w-0">
+                            {/* Rating & Stock Status */}
+                            <div className="flex items-center justify-between gap-1 min-w-0 w-full">
+                              <div className="flex items-center gap-0.5 text-[9.5px] sm:text-xs text-amber-500 font-bold shrink-0">
                                 <Star className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400 shrink-0" />
                                 <span className="text-zinc-900">{product.rating}</span>
-                                <span className="text-zinc-400 font-normal text-[7px] sm:text-[10px]">({product.reviewsCount})</span>
+                                <span className="text-zinc-400 font-normal text-[8.5px] sm:text-[10px]">({product.reviewsCount})</span>
                               </div>
-                              <span className="inline-flex items-center gap-0.5 text-[7px] sm:text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded shrink-0 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 sm:px-1.5 sm:py-0.5 rounded-full shrink-0">
                                 <CheckCircle2 className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-emerald-600 shrink-0" />
                                 <span>স্টকে আছে</span>
                               </span>
                             </div>
 
-                            {/* 1-Line Truncated Title on Mobile */}
+                            {/* 2-Line Product Title */}
                             <h4 
-                              className="font-bold text-zinc-900 text-[10px] sm:text-sm leading-tight truncate block w-full min-w-0 group-hover:text-emerald-800 transition-colors py-0.2" 
+                              className="font-bold text-zinc-900 text-[11.5px] sm:text-sm leading-snug line-clamp-2 min-h-[30px] sm:min-h-[38px] group-hover:text-emerald-800 transition-colors" 
                               title={product.name}
-                              style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                             >
                               {product.name}
                             </h4>
                           </div>
 
-                          {/* In-Card Size Selector (Desktop: Quick selector, Mobile: Clean single line info) */}
+                          {/* In-Card Size Selector */}
                           {product.sizes && product.sizes.length > 0 && (
                             <div className="pt-0.5 min-w-0">
                               {/* Desktop Buttons */}
@@ -571,35 +583,58 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
                               </div>
                               
                               {/* Mobile 1-Line Compact Badge */}
-                              <div className="sm:hidden flex items-center justify-between text-[7.5px] font-bold text-zinc-500 py-0.2">
+                              <div className="sm:hidden flex items-center justify-between text-[8px] font-bold text-zinc-500 py-0.2">
                                 <span>সাইজ: <strong className="text-zinc-800">{product.sizes.join(', ')}</strong></span>
                               </div>
                             </div>
                           )}
 
-                          {/* Price & Order */}
-                          <div className="pt-0.5 sm:pt-1.5 border-t border-zinc-100 space-y-1 min-w-0">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-[10.5px] sm:text-base font-black text-zinc-900 shrink-0">
+                          {/* Price & Action Row */}
+                          <div className="pt-1 border-t border-zinc-100/90 space-y-1.5 min-w-0">
+                            <div className="flex items-baseline gap-1.5 min-w-0">
+                              <span className="text-xs sm:text-base font-black text-zinc-900 shrink-0">
                                 ৳{product.price}
                               </span>
                               {product.originalPrice && (
-                                <span className="text-[8px] sm:text-xs text-zinc-400 line-through font-normal shrink-0">
+                                <span className="text-[10px] sm:text-xs text-zinc-400 line-through font-normal shrink-0">
                                   ৳{product.originalPrice}
                                 </span>
                               )}
                             </div>
 
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOrderClick(product);
-                              }}
-                              className="w-full text-center text-[8.5px] sm:text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 h-[22px] sm:h-[34px] py-0 px-1 sm:px-4 rounded sm:rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer active:scale-95 active:brightness-90 group/btn"
-                            >
-                              <ShoppingBag className="w-2 h-2 sm:w-3.5 sm:h-3.5 text-amber-300" />
-                              <span>অর্ডার করুন</span>
-                            </button>
+                            {/* Dual Action Buttons Row */}
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              {/* Primary Order Now Button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOrderClick(product);
+                                }}
+                                className="flex-1 h-7.5 sm:h-9 bg-[#13231B] hover:bg-[#1f372a] text-white rounded-lg sm:rounded-xl font-bold text-[10.5px] sm:text-xs flex items-center justify-center gap-1 shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer group/btn"
+                                title="সরাসরি অর্ডার করুন"
+                              >
+                                <Zap className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-amber-300 fill-amber-300 group-hover/btn:scale-110 transition-transform" />
+                                <span>অর্ডার করুন</span>
+                              </button>
+
+                              {/* Prominent Cart Button */}
+                              <button
+                                onClick={(e) => handleCardAddToCart(e, product)}
+                                className={`h-7.5 w-7.5 sm:h-9 sm:w-9 shrink-0 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-90 shadow-2xs ${
+                                  addedCardId === product.id
+                                    ? 'bg-emerald-600 text-white border border-emerald-600'
+                                    : 'bg-emerald-50 hover:bg-emerald-100 text-[#13231B] border border-emerald-200/90'
+                                }`}
+                                title="কার্টে যোগ করুন"
+                                aria-label="কার্টে যোগ করুন"
+                              >
+                                {addedCardId === product.id ? (
+                                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                                ) : (
+                                  <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-800" />
+                                )}
+                              </button>
+                            </div>
                           </div>
 
                         </div>

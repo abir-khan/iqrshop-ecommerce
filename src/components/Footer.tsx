@@ -315,6 +315,16 @@ export const Footer: React.FC = () => {
             >
               রিটার্ন পলিসি
             </button>
+            <span>•</span>
+            <button 
+              onClick={() => {
+                window.location.hash = '#admin';
+              }} 
+              className="hover:text-amber-300 transition cursor-pointer text-zinc-500 hover:text-zinc-300"
+              title="অ্যাডমিন প্যানেল"
+            >
+              অ্যাডমিন
+            </button>
           </div>
           <p className="flex items-center gap-1.5 text-zinc-400">
             <span>ভালোবাসা ও বিশ্বস্ততায় তৈরি</span>

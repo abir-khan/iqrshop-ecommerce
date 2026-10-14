@@ -35,10 +35,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div
       onClick={() => onQuickView(product)}
-      className="group cursor-pointer flex flex-col justify-between bg-white rounded-xl sm:rounded-3xl p-1 sm:p-3.5 border border-zinc-200/80 hover:border-emerald-700/50 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-md transition-all duration-300 h-full active:scale-[0.99] min-w-0 overflow-hidden"
+      className="group cursor-pointer flex flex-col justify-between bg-white rounded-2xl sm:rounded-3xl p-2 sm:p-3.5 border border-zinc-200/90 hover:border-emerald-700/50 shadow-xs hover:shadow-md transition-all duration-300 h-full active:scale-[0.99] min-w-0 overflow-hidden"
     >
-      {/* 1. Compact Uniform Image Container (Consistent 1:1 Aspect Ratio on All Screens) */}
-      <div className="relative aspect-square w-full bg-zinc-100 rounded-lg sm:rounded-2xl overflow-hidden mb-1 sm:mb-2 border border-stone-200/70 shadow-2xs flex items-center justify-center">
+      {/* 1. Clean 1:1 Image Container */}
+      <div className="relative aspect-square w-full bg-zinc-100 rounded-xl sm:rounded-2xl overflow-hidden mb-1.5 sm:mb-2.5 border border-stone-200/70 shadow-2xs flex items-center justify-center">
         {!imageLoaded && (
           <div className="absolute inset-0 bg-zinc-200 animate-pulse" />
         )}
@@ -64,14 +64,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         )}
 
         {/* Top Badges (Sleek, Clean & Minimal Non-Intrusive Pills) */}
-        <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5 z-10">
+        <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 z-10">
           {product.badge && (
-            <span className="bg-[#13231B]/90 backdrop-blur-2xs text-amber-300 text-[7px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
+            <span className="bg-[#13231B]/90 backdrop-blur-2xs text-amber-300 text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
               {product.badge}
             </span>
           )}
           {discountAmount > 0 && (
-            <span className="bg-rose-600/90 backdrop-blur-2xs text-white text-[7px] sm:text-[9.5px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
+            <span className="bg-rose-600/90 backdrop-blur-2xs text-white text-[8px] sm:text-[9.5px] font-bold px-1.5 py-0.5 rounded shadow-2xs">
               ৳{discountAmount} ছাড়
             </span>
           )}
@@ -84,88 +84,100 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </span>
         )}
 
-        {/* Wishlist Heart Icon (With Press Effect) */}
+        {/* Wishlist Heart Icon */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggleWishlist(product.id);
           }}
-          className={`absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-5 h-5 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition cursor-pointer shadow-xs active:scale-90 active:brightness-90 ${
+          className={`absolute top-1.5 right-1.5 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition cursor-pointer shadow-xs active:scale-90 ${
             isWishlisted
               ? 'text-rose-600 bg-white'
               : 'text-zinc-600 hover:text-rose-600 bg-white/95 hover:bg-white'
           }`}
           title="পছন্দের তালিকায় রাখুন"
         >
-          <Heart className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
-        </button>
-
-        {/* Floating Quick Add-To-Cart Button (With Press Effect) */}
-        <button
-          onClick={handleAddToCart}
-          className={`absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 w-5.5 h-5.5 sm:w-9 sm:h-9 rounded-md sm:rounded-xl flex items-center justify-center transition-all duration-200 shadow-xs cursor-pointer ${
-            added
-              ? 'bg-emerald-600 text-white scale-105'
-              : 'bg-[#13231B] hover:bg-[#1f372a] text-white hover:scale-105 active:scale-90 active:brightness-90'
-          }`}
-          title="কার্টে যোগ করুন"
-        >
-          {added ? <Check className="w-2.5 h-2.5 sm:w-4 sm:h-4" /> : <ShoppingBag className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-amber-300" />}
+          <Heart className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
         </button>
       </div>
 
-      {/* 2. Product Information (Strictly 1-Line Title, 1-Line Stock & Ultra Dense) */}
-      <div className="space-y-0.5 sm:space-y-1.5 flex-1 flex flex-col justify-between min-w-0 w-full overflow-hidden px-0.5">
+      {/* 2. Product Information & Actions (Spacious, Clear & Readable) */}
+      <div className="space-y-1 sm:space-y-1.5 flex-1 flex flex-col justify-between min-w-0 w-full overflow-hidden">
         
-        {/* Rating & Stock Status (Combined in 1 Single Line) */}
-        <div className="flex items-center justify-between gap-1 min-w-0 w-full overflow-hidden">
-          {/* Star Rating */}
-          <div className="flex items-center gap-0.5 text-amber-500 text-[8px] sm:text-xs font-bold shrink-0 whitespace-nowrap">
-            <Star className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400 shrink-0" />
-            <span className="text-zinc-900">{product.rating}</span>
-            <span className="text-zinc-400 font-normal text-[7px] sm:text-[10px]">({product.reviewsCount})</span>
+        <div className="space-y-1 min-w-0">
+          {/* Rating & Stock Status */}
+          <div className="flex items-center justify-between gap-1 min-w-0 w-full">
+            {/* Star Rating */}
+            <div className="flex items-center gap-0.5 text-amber-500 text-[9.5px] sm:text-xs font-bold shrink-0">
+              <Star className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400 shrink-0" />
+              <span className="text-zinc-900">{product.rating}</span>
+              <span className="text-zinc-400 font-normal text-[8.5px] sm:text-[10px]">({product.reviewsCount})</span>
+            </div>
+
+            {/* Stock Status Badge */}
+            <span className="inline-flex items-center gap-0.5 text-[8px] sm:text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 sm:px-1.5 sm:py-0.5 rounded-full shrink-0">
+              <CheckCircle2 className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-emerald-600 shrink-0" />
+              <span>স্টকে আছে</span>
+            </span>
           </div>
 
-          {/* Stock Status Badge */}
-          <span className="inline-flex items-center gap-0.5 text-[7px] sm:text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded shrink-0 whitespace-nowrap">
-            <CheckCircle2 className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-emerald-600 shrink-0" />
-            <span>স্টকে আছে</span>
-          </span>
-        </div>
-
-        {/* Product Title (Forced 1-Line with strict inline style + CSS ellipsis) */}
-        <h3 
-          className="font-bold text-zinc-900 text-[10px] sm:text-sm leading-tight truncate block w-full min-w-0 group-hover:text-emerald-800 transition-colors py-0.2" 
-          title={product.name}
-          style={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
-          {product.name}
-        </h3>
-
-        {/* Price & Discount (Compact font on mobile) */}
-        <div className="flex items-baseline gap-1 pt-0.5 border-t border-zinc-100 min-w-0">
-          <span className="text-[10.5px] sm:text-base font-black text-zinc-900 shrink-0">
-            ৳{product.price}
-          </span>
-          {product.originalPrice && (
-            <span className="text-[8px] sm:text-xs text-zinc-400 line-through font-normal shrink-0">
-              ৳{product.originalPrice}
-            </span>
-          )}
-        </div>
-
-        {/* Compact Order Button (Reduced Height & Sleek Layout) */}
-        <div className="pt-0.5">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onBuyNow(product);
-            }}
-            className="w-full text-center text-[8.5px] sm:text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 h-[22px] sm:h-[34px] py-0 px-1 sm:px-4 rounded sm:rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-0.5 sm:gap-1 cursor-pointer active:scale-95 active:brightness-90 group/btn"
+          {/* Product Title (2-Line Clamp for natural readability, preventing awkward truncation) */}
+          <h3 
+            className="font-bold text-zinc-900 text-[11.5px] sm:text-sm leading-snug line-clamp-2 min-h-[30px] sm:min-h-[38px] group-hover:text-emerald-800 transition-colors" 
+            title={product.name}
           >
-            <Zap className="w-2 h-2 sm:w-3.5 sm:h-3.5 text-amber-300 fill-amber-300 group-hover/btn:scale-110 transition-transform" />
-            <span>অর্ডার করুন</span>
-          </button>
+            {product.name}
+          </h3>
+        </div>
+
+        {/* Price & Action Row */}
+        <div className="pt-1 border-t border-zinc-100/90 space-y-1.5 min-w-0">
+          {/* Price */}
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            <span className="text-xs sm:text-base font-black text-stone-950 shrink-0">
+              ৳{product.price}
+            </span>
+            {product.originalPrice && (
+              <span className="text-[10px] sm:text-xs text-zinc-400 line-through font-normal shrink-0">
+                ৳{product.originalPrice}
+              </span>
+            )}
+          </div>
+
+          {/* Dual Action Buttons Row: Prominent "অর্ডার করুন" + Dedicated Visible Cart Icon */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Primary Order Now Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onBuyNow(product);
+              }}
+              className="flex-1 h-7.5 sm:h-9 bg-[#13231B] hover:bg-[#1f372a] text-white rounded-lg sm:rounded-xl font-bold text-[10.5px] sm:text-xs flex items-center justify-center gap-1 shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer group/btn"
+              title="সরাসরি অর্ডার করুন"
+            >
+              <Zap className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-amber-300 fill-amber-300 group-hover/btn:scale-110 transition-transform" />
+              <span>অর্ডার করুন</span>
+            </button>
+
+            {/* Prominent Cart Button (Dedicated & Easy to Tap) */}
+            <button
+              onClick={handleAddToCart}
+              className={`h-7.5 w-7.5 sm:h-9 sm:w-9 shrink-0 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-90 shadow-2xs ${
+                added
+                  ? 'bg-emerald-600 text-white border border-emerald-600'
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-[#13231B] border border-emerald-200/90'
+              }`}
+              title="কার্টে যোগ করুন"
+              aria-label="কার্টে যোগ করুন"
+            >
+              {added ? (
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+              ) : (
+                <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-800" />
+              )}
+            </button>
+          </div>
+
         </div>
 
       </div>
