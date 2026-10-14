@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, CheckCircle, ShieldCheck, MessageCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCms } from '../context/CmsContext';
+import type { Product } from '../types';
 
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
+  directBuyItem?: { product: Product; quantity?: number; selectedSize?: string } | null;
 }
 
-export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
+export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, directBuyItem }) => {
   const { cart, cartTotal, clearCart } = useCart();
   const { createOrder, data: cmsData } = useCms();
   const { siteSettings } = cmsData;
@@ -27,14 +29,36 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
 
+  // Active items for this checkout session:
+  // If directBuyItem is passed, checkout ONLY this item without polluting the persistent cart!
+  const checkoutItems = useMemo(() => {
+    if (directBuyItem) {
+      return [
+        {
+          product: directBuyItem.product,
+          quantity: directBuyItem.quantity || 1,
+          selectedSize: directBuyItem.selectedSize,
+        },
+      ];
+    }
+    return cart;
+  }, [directBuyItem, cart]);
+
+  const itemsSubtotal = useMemo(() => {
+    if (directBuyItem) {
+      return directBuyItem.product.price * (directBuyItem.quantity || 1);
+    }
+    return cartTotal;
+  }, [directBuyItem, cartTotal]);
+
   if (!isOpen) return null;
 
   // Delivery Charge: 70 BDT inside Dhaka, 120 BDT outside Dhaka
   const deliveryCharge = formData.deliveryArea === 'inside_dhaka' ? 70 : 120;
 
   // Discount calculation
-  const discountAmount = Math.round((cartTotal * discountPercent) / 100);
-  const grandTotal = Math.max(0, cartTotal - discountAmount + deliveryCharge);
+  const discountAmount = Math.round((itemsSubtotal * discountPercent) / 100);
+  const grandTotal = Math.max(0, itemsSubtotal - discountAmount + deliveryCharge);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +90,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     setOrderId(generatedId);
 
     // Save order into CMS store
-    const orderedItems = cart.map((item) => ({
+    const orderedItems = checkoutItems.map((item) => ({
       id: item.product.id,
       name: item.product.name,
       price: item.product.price,
@@ -83,7 +107,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
       deliveryArea: formData.deliveryArea as 'inside_dhaka' | 'outside_dhaka',
       notes: formData.notes.trim() || undefined,
       items: orderedItems,
-      subtotal: cartTotal,
+      subtotal: itemsSubtotal,
       deliveryCharge,
       discount: discountAmount,
       totalAmount: grandTotal,
@@ -93,7 +117,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     });
 
     setIsSuccess(true);
-    clearCart();
+    // Only clear shopping cart if order was made from cart, not direct-buy
+    if (!directBuyItem) {
+      clearCart();
+    }
   };
 
   const waNumber = siteSettings?.whatsappNumber?.replace(/[^0-9]/g, '') || '8801700000000';
@@ -294,11 +321,46 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
               )}
             </div>
 
+            {/* Ordered Items Mini Breakdown List */}
+            {checkoutItems.length > 0 && (
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between text-[11px] font-bold text-stone-600 px-1">
+                  <span>অর্ডারকৃত পণ্যসমূহ ({checkoutItems.length}টি):</span>
+                  <span>মূল্য</span>
+                </div>
+                <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                  {checkoutItems.map((item) => (
+                    <div
+                      key={`${item.product.id}-${item.selectedSize || ''}`}
+                      className="flex items-center justify-between text-xs bg-[#FAF8F5] p-2 rounded-xl border border-[#E8DFD1]"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <img
+                          src={item.product.image}
+                          alt={item.product.name}
+                          className="w-9 h-9 rounded-lg object-cover shrink-0 border border-stone-200"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-bold text-stone-900 truncate">{item.product.name}</p>
+                          <p className="text-[10px] text-stone-500 font-medium">
+                            পরিমাণ: {item.quantity}{item.selectedSize ? ` • ${item.selectedSize}` : item.product.badge ? ` • ${item.product.badge}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="font-bold text-emerald-800 shrink-0 ml-2">
+                        ৳{item.product.price * item.quantity}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Order Summary Box */}
             <div className="bg-[#FAF8F5] p-3.5 rounded-2xl border border-[#E8DFD1] space-y-2 text-xs text-stone-700">
               <div className="flex justify-between">
                 <span>পণ্যের মোট মূল্য:</span>
-                <span className="font-bold text-stone-900">৳{cartTotal}</span>
+                <span className="font-bold text-stone-900">৳{itemsSubtotal}</span>
               </div>
 
               {discountAmount > 0 && (

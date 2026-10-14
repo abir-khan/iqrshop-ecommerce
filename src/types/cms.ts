@@ -176,6 +176,7 @@ export type HomeSectionId =
   | 'hero'
   | 'category_nav'
   | 'showroom_strip'
+  | 'combo_chart'
   | 'category_sections'
   | 'reviews'
   | 'trust'

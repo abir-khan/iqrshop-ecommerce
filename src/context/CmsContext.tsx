@@ -101,7 +101,9 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           orders: Array.isArray(parsed.orders) && parsed.orders.length > 0 ? parsed.orders : DEFAULT_CMS_DATA.orders,
           categoryBanners: Array.isArray(parsed.categoryBanners) && parsed.categoryBanners.length > 0 ? parsed.categoryBanners : DEFAULT_CMS_DATA.categoryBanners,
           showroomStrip: { ...DEFAULT_CMS_DATA.showroomStrip, ...(parsed.showroomStrip || {}) },
-          homeSections: Array.isArray(parsed.homeSections) && parsed.homeSections.length > 0 ? parsed.homeSections : DEFAULT_CMS_DATA.homeSections,
+          homeSections: Array.isArray(parsed.homeSections) && parsed.homeSections.length > 0
+            ? parsed.homeSections.filter((s: any) => s.id !== 'category_nav' && s.id !== 'showroom_strip')
+            : DEFAULT_CMS_DATA.homeSections,
           headerNavLinks: Array.isArray(parsed.headerNavLinks) && parsed.headerNavLinks.length > 0 ? parsed.headerNavLinks : DEFAULT_CMS_DATA.headerNavLinks,
         };
       }

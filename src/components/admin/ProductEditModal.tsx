@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, Save, Trash2, Package, Tag, DollarSign } from 'lucide-react';
-import type { Product, Category } from '../../types';
+import { X, Save, Trash2, Package, Tag, DollarSign, Check, Layers } from 'lucide-react';
+import type { Product, Category, CreateComboChartInput } from '../../types';
 import { ImageUploadField } from './ImageUploadField';
 
 interface ProductEditModalProps {
@@ -8,7 +8,8 @@ interface ProductEditModalProps {
   onClose: () => void;
   product?: Product | null;
   categories: Category[];
-  onSave: (product: Product) => void;
+  allProducts?: Product[];
+  onSave: (product: Product, comboChartData?: CreateComboChartInput) => void;
 }
 
 export const ProductEditModal: React.FC<ProductEditModalProps> = ({
@@ -16,6 +17,7 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({
   onClose,
   product,
   categories,
+  allProducts = [],
   onSave,
 }) => {
   const isEditing = !!product;
@@ -43,12 +45,36 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({
   const [newFeature, setNewFeature] = useState('');
   const [newSize, setNewSize] = useState('');
 
+  // ==========================================
+  // Combo Chart Decision State (ক্যাটাগরি অনুসারে কম্বো চার্ট)
+  // ==========================================
+  const [isComboEnabled, setIsComboEnabled] = useState(false);
+  const [comboTitle, setComboTitle] = useState('');
+  const [comboPrice, setComboPrice] = useState<number>(0);
+  const [comboPackageSize, setComboPackageSize] = useState('৩ পিস স্পেশাল কম্বো');
+  const [comboCategory, setComboCategory] = useState<string>(formData.category || 'panjabi');
+  const [comboSelectedProductIds, setComboSelectedProductIds] = useState<string[]>([]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
-    onSave(formData);
+
+    let comboPayload: CreateComboChartInput | undefined;
+    if (isComboEnabled) {
+      const finalProductIds = Array.from(new Set([formData.id, ...comboSelectedProductIds]));
+      comboPayload = {
+        title: comboTitle.trim() || `${formData.name} স্পেশাল কম্বো`,
+        price: Number(comboPrice) > 0 ? Number(comboPrice) : formData.price,
+        packageSize: comboPackageSize.trim() || `${finalProductIds.length} পিস কম্বো সেট`,
+        isActive: true,
+        categoryId: comboCategory !== 'all' ? comboCategory : undefined,
+        productIds: finalProductIds,
+      };
+    }
+
+    onSave(formData, comboPayload);
     onClose();
   };
 
@@ -138,7 +164,13 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({
               </label>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) => {
+                  const newCat = e.target.value;
+                  setFormData({ ...formData, category: newCat });
+                  if (!isComboEnabled) {
+                    setComboCategory(newCat);
+                  }
+                }}
                 className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:outline-none focus:border-emerald-600 focus:bg-white font-medium text-xs sm:text-sm"
               >
                 {categories
@@ -409,6 +441,179 @@ export const ProductEditModal: React.FC<ProductEditModalProps> = ({
                 + পয়েন্ট যোগ করুন
               </button>
             </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* 🥧 COMBO CHART DECISION SECTION (ক্যাটাগরি অনুসারে কম্বো চার্ট অপশন) */}
+          {/* ========================================================================= */}
+          <div className="p-4 sm:p-5 rounded-2xl border-2 border-emerald-600/30 bg-gradient-to-br from-emerald-50/60 via-teal-50/30 to-stone-50 space-y-4 shadow-xs">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+                  🥧
+                </div>
+                <div>
+                  <h4 className="font-bold text-stone-900 text-xs sm:text-sm">
+                    ক্যাটাগরি অনুসারে কম্বো চার্ট (Combo Chart) তৈরি করবেন?
+                  </h4>
+                  <p className="text-[11px] text-stone-500">
+                    এই প্রোডাক্টসহ নির্দিষ্ট ক্যাটাগরির একাধিক পণ্য নিয়ে আকর্ষণীয় পাই-চার্ট কম্বো তৈরি করতে টগল করুন
+                  </p>
+                </div>
+              </div>
+
+              {/* Toggle Switch */}
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={isComboEnabled}
+                  onChange={(e) => {
+                    const nextVal = e.target.checked;
+                    setIsComboEnabled(nextVal);
+                    if (nextVal && !comboTitle) {
+                      setComboTitle(`${formData.name || 'এক্সক্লুসিভ'} স্পেশাল কম্বো`);
+                      setComboPrice(formData.price > 0 ? Math.round(formData.price * 2 * 0.85) : 0);
+                    }
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-700"></div>
+              </label>
+            </div>
+
+            {/* Expanded Combo Options */}
+            {isComboEnabled && (
+              <div className="space-y-3.5 pt-3 border-t border-emerald-200/60 text-xs animate-fadeIn">
+                
+                {/* 1. Category & Title Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-800 flex items-center gap-1">
+                      <Tag className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>কম্বোর ক্যাটাগরি (ঐচ্ছিক)</span>
+                    </label>
+                    <select
+                      value={comboCategory}
+                      onChange={(e) => {
+                        setComboCategory(e.target.value);
+                        setComboSelectedProductIds([]);
+                      }}
+                      className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-600 font-medium"
+                    >
+                      {categories
+                        .filter((c) => c.id !== 'all')
+                        .map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.icon} {cat.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-800">
+                      কম্বো চার্ট টাইটেল *
+                    </label>
+                    <input
+                      type="text"
+                      value={comboTitle}
+                      onChange={(e) => setComboTitle(e.target.value)}
+                      placeholder="যেমন: প্রিমিয়াম পাঞ্জাবি ও সুবাস কম্বো"
+                      className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-600 font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Combo Price & Package Size Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-800 flex items-center gap-1">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>কম্বো অফার মূল্য (৳)</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={comboPrice || ''}
+                      onChange={(e) => setComboPrice(Number(e.target.value))}
+                      placeholder="যেমন: 3450"
+                      className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-600 font-medium"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-stone-800 flex items-center gap-1">
+                      <Package className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>প্যাকেজ সাইজ / বিবরণ</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={comboPackageSize}
+                      onChange={(e) => setComboPackageSize(e.target.value)}
+                      placeholder="যেমন: ৩ পিস স্পেশাল কম্বো"
+                      className="w-full px-3 py-2 bg-white border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:border-emerald-600 font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Product Selection from Chosen Category */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-stone-800 flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>এই ক্যাটাগরি থেকে অতিরিক্ত পণ্য সিলেক্ট করুন:</span>
+                    </label>
+                    <span className="text-[11px] font-semibold text-emerald-700">
+                      সিলেক্টেড: {comboSelectedProductIds.length + 1} টি (বর্তমান প্রোডাক্ট সহ)
+                    </span>
+                  </div>
+
+                  {allProducts.filter((p) => p.category === comboCategory && p.id !== formData.id).length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1 bg-white rounded-xl border border-stone-200">
+                      {allProducts
+                        .filter((p) => p.category === comboCategory && p.id !== formData.id)
+                        .map((catProd) => {
+                          const isSelected = comboSelectedProductIds.includes(catProd.id);
+                          return (
+                            <div
+                              key={catProd.id}
+                              onClick={() => {
+                                setComboSelectedProductIds((prev) =>
+                                  isSelected ? prev.filter((id) => id !== catProd.id) : [...prev, catProd.id]
+                                );
+                              }}
+                              className={`p-2 rounded-lg border flex items-center gap-2 cursor-pointer transition select-none ${
+                                isSelected
+                                  ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-bold'
+                                  : 'bg-stone-50/60 border-stone-200 text-stone-700 hover:bg-stone-100'
+                              }`}
+                            >
+                              <img
+                                src={catProd.image}
+                                alt={catProd.name}
+                                className="w-8 h-8 rounded-lg object-cover shrink-0 border border-stone-200"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="truncate text-xs leading-tight">{catProd.name}</p>
+                                <span className="text-[10px] text-stone-500">৳{catProd.price}</span>
+                              </div>
+                              <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border ${
+                                isSelected ? 'bg-emerald-700 border-emerald-700 text-white' : 'border-stone-300'
+                              }`}>
+                                {isSelected && <Check className="w-2.5 h-2.5" />}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-stone-500 bg-white p-2.5 rounded-xl border border-dashed border-stone-200 text-center">
+                      এই ক্যাটাগরিতে বর্তমানে অন্য কোনো পণ্য নেই। সেভ করার পর বর্তমান পণ্যটি নিয়েই চার্ট তৈরি হবে।
+                    </p>
+                  )}
+                </div>
+
+              </div>
+            )}
           </div>
 
           {/* Footer Submit */}

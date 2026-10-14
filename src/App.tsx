@@ -11,6 +11,7 @@ import { QuickViewModal } from './components/QuickViewModal';
 import { WishlistModal } from './components/WishlistModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { CategoryView } from './components/CategoryView';
+import { ComboLandingView } from './components/ComboLandingView';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import type { Product } from './types';
@@ -18,8 +19,14 @@ import type { Product } from './types';
 function ShopContent() {
   const { data, isAdminLoggedIn } = useCms();
   const [activeCategoryView, setActiveCategoryView] = useState<string | null>(null);
+  const [activeComboId, setActiveComboId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [directCheckoutItem, setDirectCheckoutItem] = useState<{
+    product: Product;
+    quantity?: number;
+    selectedSize?: string;
+  } | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
@@ -71,7 +78,50 @@ function ShopContent() {
     }
   };
 
-  const { addToCart, setIsCartOpen } = useCart();
+  // Detect ?combo= or #combo- in URL for independent Facebook boosting links
+  useEffect(() => {
+    const handleComboUrl = () => {
+      // 1. Check Query parameter (?combo=combo-id)
+      const params = new URLSearchParams(window.location.search);
+      const comboParam = params.get('combo');
+      if (comboParam) {
+        setActiveComboId(comboParam);
+        return;
+      }
+
+      // 2. Check Hash routing (#combo-combo-id or #/combo/combo-id)
+      const hash = window.location.hash;
+      if (hash.startsWith('#combo-')) {
+        setActiveComboId(hash.replace('#combo-', ''));
+        return;
+      }
+      if (hash.startsWith('#/combo/')) {
+        setActiveComboId(hash.replace('#/combo/', ''));
+        return;
+      }
+    };
+
+    handleComboUrl();
+    window.addEventListener('popstate', handleComboUrl);
+    window.addEventListener('hashchange', handleComboUrl);
+    return () => {
+      window.removeEventListener('popstate', handleComboUrl);
+      window.removeEventListener('hashchange', handleComboUrl);
+    };
+  }, []);
+
+  const handleBackFromCombo = () => {
+    setActiveComboId(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('combo');
+    if (url.hash.includes('combo')) {
+      url.hash = '';
+    }
+    window.history.pushState({}, '', url.pathname + (url.search ? url.search : ''));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const { setIsCartOpen } = useCart();
 
   // Dynamic products list from CMS context
   const productsList = data.products;
@@ -99,12 +149,23 @@ function ShopContent() {
   };
 
   const handleBuyNow = (product: Product, size?: string) => {
-    addToCart(product, size);
+    // Direct buy sets directCheckoutItem and opens CheckoutModal without polluting persistent cart
+    setDirectCheckoutItem({
+      product,
+      quantity: 1,
+      selectedSize: size,
+    });
     setIsCartOpen(false);
     setIsCheckoutOpen(true);
   };
 
+  const handleCloseCheckout = () => {
+    setIsCheckoutOpen(false);
+    setDirectCheckoutItem(null);
+  };
+
   const handleSelectCategory = (categoryId: string) => {
+    setActiveComboId(null);
     if (categoryId === 'home') {
       setActiveCategoryView(null);
     } else {
@@ -128,8 +189,18 @@ function ShopContent() {
         activeCategory={activeCategoryView}
       />
 
-      {/* When user searches, display search results grid */}
-      {searchResults ? (
+      {/* When direct Combo link is accessed (e.g. from Facebook Ads), render dedicated Landing View */}
+      {activeComboId ? (
+        <ComboLandingView
+          comboId={activeComboId}
+          onBackToHome={handleBackFromCombo}
+          onBuyNow={handleBuyNow}
+          onQuickView={setQuickViewProduct}
+          wishlistIds={wishlistIds}
+          onToggleWishlist={handleToggleWishlist}
+          onOpenCheckout={() => setIsCheckoutOpen(true)}
+        />
+      ) : searchResults ? (
         <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg sm:text-xl font-black text-stone-900">
@@ -189,12 +260,18 @@ function ShopContent() {
       )}
 
       {/* 10. Slide-out Cart Drawer */}
-      <CartDrawer onProceedToCheckout={() => setIsCheckoutOpen(true)} />
+      <CartDrawer
+        onProceedToCheckout={() => {
+          setDirectCheckoutItem(null);
+          setIsCheckoutOpen(true);
+        }}
+      />
 
       {/* 11. 1-Click Fast Cash on Delivery Modal */}
       <CheckoutModal
         isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
+        onClose={handleCloseCheckout}
+        directBuyItem={directCheckoutItem}
       />
 
       {/* 12. Quick View Modal */}

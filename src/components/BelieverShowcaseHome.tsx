@@ -1,11 +1,11 @@
 import React from 'react';
 import { ShowcaseHeroBanner } from './ShowcaseHeroBanner';
-import { ShowcaseCategoryNav } from './ShowcaseCategoryNav';
-import { ShowcaseShowroomStrip } from './ShowcaseShowroomStrip';
 import { ShowcaseCategorySection } from './ShowcaseCategorySection';
 import { CustomerReviews } from './CustomerReviews';
 import { TrustBar } from './TrustBar';
 import { Newsletter } from './Newsletter';
+import { ProductComboChart } from './ProductComboChart';
+import { createComboProductItem } from '../lib/comboChartService';
 import { useCms } from '../context/CmsContext';
 import { DEFAULT_HOME_SECTIONS } from '../data/defaultCmsData';
 import type { Product } from '../types';
@@ -119,24 +119,64 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
     ? data.categoryBanners
     : Object.values(CATEGORY_BANNERS);
 
-  const activeHomeSections = (data.homeSections && data.homeSections.length > 0)
+  const rawSections = (data.homeSections && data.homeSections.length > 0)
     ? [...data.homeSections].sort((a, b) => a.order - b.order)
     : DEFAULT_HOME_SECTIONS;
+
+  // Ensure combo_chart is rendered even if older cache exists
+  const activeHomeSections = React.useMemo(() => {
+    const list = [...rawSections];
+    if (!list.some((s) => s.id === 'combo_chart')) {
+      const insertIdx = list.findIndex((s) => s.id === 'category_sections');
+      const comboSec: import('../types/cms').HomeSectionItem = {
+        id: 'combo_chart',
+        name: 'সার্কুলার কম্বো চার্ট অফার',
+        description: 'পাই-চার্ট ডিজাইনে সাজানো আকর্ষণীয় কম্বো প্যাকেজ ও অফার',
+        enabled: true,
+        order: 3.5,
+      };
+      if (insertIdx !== -1) {
+        list.splice(insertIdx, 0, comboSec);
+      } else {
+        list.push(comboSec);
+      }
+    }
+    return list;
+  }, [rawSections]);
 
   return (
     <div className="space-y-4 sm:space-y-12 lg:space-y-16 pb-6 sm:pb-20 font-sans">
       {activeHomeSections
-        .filter((sec) => sec.enabled !== false)
+        .filter((sec) => sec.enabled !== false && sec.id !== 'category_nav' && sec.id !== 'showroom_strip')
         .map((sec) => {
           switch (sec.id) {
             case 'hero':
               return <ShowcaseHeroBanner key="hero" onSelectCategory={onSelectCategory} />;
 
-            case 'category_nav':
-              return <ShowcaseCategoryNav key="category_nav" onSelectCategory={onSelectCategory} />;
-
-            case 'showroom_strip':
-              return <ShowcaseShowroomStrip key="showroom_strip" onSelectCategory={onSelectCategory} />;
+            case 'combo_chart':
+              return (
+                <section key="combo_chart" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4">
+                  <div className="text-center mb-6 sm:mb-8">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-3.5 py-1 rounded-full shadow-2xs">
+                      ✨ এক্সক্লুসিভ প্যাকেজ
+                    </span>
+                    <h2 className="text-xl sm:text-3xl font-black text-stone-900 mt-2">
+                      সার্কুলার কম্বো চার্ট অফার
+                    </h2>
+                    <p className="text-xs sm:text-sm text-stone-500 mt-1 max-w-lg mx-auto">
+                      প্যাকেজের যেকোনো আইটেমে হোভার করে বিস্তারিত দেখুন এবং আকর্ষণীয় ছাড়ে পুরো সেট অর্ডার করুন
+                    </p>
+                  </div>
+                  <ProductComboChart
+                    onSelectProduct={onQuickView}
+                    onBuyCombo={(chart, prods) => {
+                      if (prods.length > 0) {
+                        onBuyNow(createComboProductItem(chart, prods));
+                      }
+                    }}
+                  />
+                </section>
+              );
 
             case 'category_sections':
               return (

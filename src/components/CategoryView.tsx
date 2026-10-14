@@ -12,6 +12,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { ProductGridSkeleton } from './SkeletonLoader';
+import { ProductComboChart } from './ProductComboChart';
+import { createComboProductItem } from '../lib/comboChartService';
 import type { Product } from '../types';
 import { useCms } from '../context/CmsContext';
 
@@ -420,6 +422,16 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Category-Specific Circular Combo Chart (Only shows if an active combo chart exists for this category) */}
+            <ProductComboChart
+              categoryId={selectedCategory}
+              onSelectProduct={onQuickView}
+              onBuyCombo={(chart, prods) => {
+                if (prods.length > 0) onBuyNow(createComboProductItem(chart, prods));
+              }}
+              className="my-3 sm:my-5"
+            />
 
             {/* Products Grid */}
             {isLoading ? (

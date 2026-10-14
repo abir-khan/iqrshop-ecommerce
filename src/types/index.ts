@@ -39,3 +39,5 @@ export interface CartItem {
   quantity: number;
   selectedSize?: string;
 }
+
+export * from './comboChart';

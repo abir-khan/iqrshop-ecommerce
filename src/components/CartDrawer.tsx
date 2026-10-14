@@ -112,13 +112,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onProceedToCheckout }) =
                     <h4 className="font-bold text-xs sm:text-sm text-stone-900 leading-tight line-clamp-1">
                       {item.product.name}
                     </h4>
-                    {item.selectedSize && (
-                      <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.2 rounded mt-0.5 inline-block">
-                        সাইজ: {item.selectedSize}
+                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                      {item.selectedSize ? (
+                        <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.2 rounded inline-block border border-emerald-100">
+                          {item.selectedSize}
+                        </span>
+                      ) : item.product.badge ? (
+                        <span className="text-[10px] text-amber-900 font-bold bg-amber-50 px-1.5 py-0.2 rounded inline-block border border-amber-200">
+                          {item.product.badge}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex items-baseline gap-1.5 mt-1">
+                      <span className="text-xs sm:text-sm font-black text-[#0D382D]">
+                        ৳{item.product.price * item.quantity}
                       </span>
-                    )}
-                    <div className="text-xs sm:text-sm font-black text-[#0D382D] mt-1">
-                      ৳{item.product.price * item.quantity}
+                      {item.product.originalPrice && item.product.originalPrice > item.product.price && (
+                        <span className="text-[10px] text-stone-400 line-through">
+                          ৳{item.product.originalPrice * item.quantity}
+                        </span>
+                      )}
                     </div>
                   </div>
 

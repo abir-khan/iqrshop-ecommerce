@@ -3,13 +3,14 @@ import {
   Phone, 
   Mail, 
   ShieldCheck, 
-  Heart, 
+  Heart,
   Truck, 
   RotateCcw, 
-  Clock, 
+  Clock,
   ArrowRight, 
   Sparkles,
-  MapPin
+  MapPin,
+  Banknote
 } from 'lucide-react';
 import { PolicyModal, type PolicyTab } from './PolicyModal';
 import { useCms } from '../context/CmsContext';
@@ -29,14 +30,14 @@ export const Footer: React.FC = () => {
     <footer className="bg-[#060e09] text-zinc-200 pt-5 sm:pt-10 pb-6 sm:pb-8 border-t-2 border-[#193828] font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5 sm:space-y-10">
         
-        {/* COMPACT POLICY SUMMARY STRIP + 'বিস্তারিত দেখুন' BUTTON */}
-        <div className="bg-[#0f241a] border-2 border-[#1f4a35] rounded-xl sm:rounded-3xl p-2.5 sm:p-6 shadow-md">
+        {/* PROMINENT GUARANTEE & POLICY SUMMARY STRIP */}
+        <div className="bg-[#0f241a] border-2 border-[#1f4a35] rounded-xl sm:rounded-3xl p-3 sm:p-6 shadow-md">
           {/* Top Bar with Title & CTA */}
-          <div className="flex flex-row items-center justify-between gap-2 pb-2 sm:pb-4 mb-2 sm:mb-4 border-b border-[#1f4a35]">
+          <div className="flex flex-row items-center justify-between gap-2 pb-2.5 sm:pb-4 mb-2.5 sm:mb-4 border-b border-[#1f4a35]">
             <div className="flex items-center gap-1.5 sm:gap-2.5">
               <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
               <h3 className="text-xs sm:text-lg font-black text-white">
-                {siteSettings.siteName} পলিসি ও নিশ্চয়তা
+                {siteSettings.siteName} পলিসি ও গ্যারান্টি
               </h3>
             </div>
             
@@ -45,76 +46,86 @@ export const Footer: React.FC = () => {
               onClick={() => openPolicy('shipping')}
               className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-[10px] sm:text-sm font-black transition-all cursor-pointer shadow-sm active:scale-95 group"
             >
-              <span>বিস্তারিত</span>
+              <span>বিস্তারিত পলিসি</span>
               <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
 
-          {/* 3 Compact Summary Cards */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-3.5">
+          {/* 4 Prominent Guarantee Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3.5">
             
-            {/* Summary 1: Shipping */}
+            {/* 1. ক্যাশ অন ডেলিভারি */}
             <div 
               onClick={() => openPolicy('shipping')}
-              className="p-1.5 sm:p-3.5 rounded-lg sm:rounded-2xl bg-[#132a20] hover:bg-[#183528] border border-[#1f4a35] transition-all cursor-pointer flex flex-col sm:flex-row items-center text-center sm:text-left gap-0.5 sm:gap-3.5 group"
+              className="p-2 sm:p-3.5 rounded-lg sm:rounded-2xl bg-[#132a20] hover:bg-[#183528] border border-[#1f4a35] transition-all cursor-pointer flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 group"
             >
-              <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                <Truck className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-emerald-500 group-hover:text-stone-950 transition-all duration-300">
+                <Banknote className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0 flex-1 w-full">
-                <div className="flex items-center justify-center sm:justify-between">
-                  <h4 className="text-[9.5px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors truncate">
-                    দ্রুত শিপিং
-                  </h4>
-                  <span className="hidden sm:inline-block text-[11px] font-bold text-emerald-400">৳৬০ / ৳১২০</span>
-                </div>
-                <p className="hidden sm:block text-xs text-zinc-300 truncate pt-0.5">
-                  ঢাকা ২৪-৪৮ ঘণ্টা • সারাদেশে ২-৩ দিন
+                <h4 className="text-[11px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors leading-tight">
+                  ক্যাশ অন ডেলিভারি
+                </h4>
+                <p className="text-[9.5px] sm:text-xs text-zinc-300/80 truncate pt-0.5">
+                  পণ্য দেখে মূল্য পরিশোধ
                 </p>
               </div>
             </div>
 
-            {/* Summary 2: Return */}
+            {/* 2. ৭ দিনের রিটার্ন */}
             <div 
               onClick={() => openPolicy('return')}
-              className="p-1.5 sm:p-3.5 rounded-lg sm:rounded-2xl bg-[#132a20] hover:bg-[#183528] border border-[#1f4a35] transition-all cursor-pointer flex flex-col sm:flex-row items-center text-center sm:text-left gap-0.5 sm:gap-3.5 group"
+              className="p-2 sm:p-3.5 rounded-lg sm:rounded-2xl bg-[#132a20] hover:bg-[#183528] border border-[#1f4a35] transition-all cursor-pointer flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 group"
             >
-              <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                <RotateCcw className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-amber-500 group-hover:text-stone-950 transition-all duration-300">
+                <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0 flex-1 w-full">
-                <div className="flex items-center justify-center sm:justify-between">
-                  <h4 className="text-[9.5px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors truncate">
-                    সহজ রিটার্ন
-                  </h4>
-                  <span className="hidden sm:inline-block text-[11px] font-bold text-amber-400">৭ দিন</span>
-                </div>
-                <p className="hidden sm:block text-xs text-zinc-300 truncate pt-0.5">
-                  ওপেন বক্স চেক • ১ কলেই ফ্রি এক্সচেঞ্জ
+                <h4 className="text-[11px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors leading-tight">
+                  ৭ দিনের রিটার্ন
+                </h4>
+                <p className="text-[9.5px] sm:text-xs text-zinc-300/80 truncate pt-0.5">
+                  সহজ এক্সচেঞ্জ পলিসি
                 </p>
               </div>
             </div>
 
-            {/* Summary 3: Quality */}
+            {/* 3. অরিজিনাল প্রোডাক্ট গ্যারান্টি */}
             <div 
               onClick={() => openPolicy('quality')}
-              className="p-1.5 sm:p-3.5 rounded-lg sm:rounded-2xl bg-[#132a20] hover:bg-[#183528] border border-[#1f4a35] transition-all cursor-pointer flex flex-col sm:flex-row items-center text-center sm:text-left gap-0.5 sm:gap-3.5 group"
+              className="p-2 sm:p-3.5 rounded-lg sm:rounded-2xl bg-[#132a20] hover:bg-[#183528] border border-[#1f4a35] transition-all cursor-pointer flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 group"
             >
-              <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+              <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0 flex-1 w-full">
-                <div className="flex items-center justify-center sm:justify-between">
-                  <h4 className="text-[9.5px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors truncate">
-                    ১০০% খাঁটি
-                  </h4>
-                  <span className="hidden sm:inline-block text-[11px] font-bold text-purple-400">অরিজিনাল</span>
-                </div>
-                <p className="hidden sm:block text-xs text-zinc-300 truncate pt-0.5">
-                  অ্যালকোহলমুক্ত আতর • খাঁটি আজওয়া ও মধু
+                <h4 className="text-[11px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors leading-tight truncate">
+                  অরিজিনাল প্রোডাক্ট গ্যারান্টি
+                </h4>
+                <p className="text-[9.5px] sm:text-xs text-zinc-300/80 truncate pt-0.5">
+                  ১০০% খাঁটি পণ্যের নিশ্চয়তা
                 </p>
               </div>
             </div>
+
+            {/* 4. ডেলিভারি ২-৫ দিন */}
+            <div 
+              onClick={() => openPolicy('shipping')}
+              className="p-2 sm:p-3.5 rounded-lg sm:rounded-2xl bg-[#132a20] hover:bg-[#183528] border border-[#1f4a35] transition-all cursor-pointer flex flex-col sm:flex-row items-center text-center sm:text-left gap-1 sm:gap-3 group"
+            >
+              <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-md sm:rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div className="min-w-0 flex-1 w-full">
+                <h4 className="text-[11px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors leading-tight">
+                  ডেলিভারি ২-৫ দিন
+                </h4>
+                <p className="text-[9.5px] sm:text-xs text-zinc-300/80 truncate pt-0.5">
+                  সারাদেশে নিরাপদ শিপিং
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
 

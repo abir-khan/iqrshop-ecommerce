@@ -33,16 +33,26 @@ import {
   ArrowUp,
   ArrowDown,
   EyeOff,
+  PieChart,
+  X,
+  Share2,
+  ExternalLink,
 } from 'lucide-react';
 import { useCms } from '../../context/CmsContext';
 import { ImageUploadField } from './ImageUploadField';
 import { ProductEditModal } from './ProductEditModal';
 import { OrderInvoiceModal } from './OrderInvoiceModal';
 import { SUPABASE_SQL_SCHEMA, testSupabaseConnection } from '../../lib/supabase';
+import { 
+  createComboChart, 
+  fetchAllComboCharts, 
+  updateComboChart, 
+  deleteComboChart 
+} from '../../lib/comboChartService';
 import { PERMANENT_SUPABASE_CONFIG } from '../../config/supabaseConfig';
 import { DEFAULT_HOME_SECTIONS, DEFAULT_HEADER_NAV_LINKS } from '../../data/defaultCmsData';
 import { CATEGORIES } from '../../data/products';
-import type { Product } from '../../types';
+import type { Product, ComboChart, ComboChartShape } from '../../types';
 import type { CustomerOrder, OrderStatus, HomeSectionItem } from '../../types/cms';
 
 interface AdminDashboardProps {
@@ -52,6 +62,7 @@ interface AdminDashboardProps {
 type TabType =
   | 'overview'
   | 'orders'
+  | 'combo'
   | 'sections'
   | 'header'
   | 'hero'
@@ -167,6 +178,134 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   // New Category form state
   const [newCatName, setNewCatName] = useState('');
   const [newCatIcon, setNewCatIcon] = useState('✨');
+
+  // Combo Charts Database State
+  const [comboChartsList, setComboChartsList] = useState<ComboChart[]>([]);
+  const [isComboFormModalOpen, setIsComboFormModalOpen] = useState(false);
+  const [editingComboId, setEditingComboId] = useState<string | null>(null);
+  const [comboProductCategoryFilter, setComboProductCategoryFilter] = useState('all');
+  const [comboProductSearch, setComboProductSearch] = useState('');
+  const [comboFormData, setComboFormData] = useState({
+    title: '',
+    price: 0,
+    packageSize: '৩ পিস স্পেশাল কম্বো',
+    shape: 'circle' as ComboChartShape,
+    categoryId: 'all',
+    isActive: true,
+    productIds: [] as string[],
+  });
+
+  const [copiedComboId, setCopiedComboId] = useState<string | null>(null);
+
+  const handleCopyComboLink = (comboId: string) => {
+    const url = `${window.location.origin}/?combo=${comboId}`;
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopiedComboId(comboId);
+        notifySuccess('ফেসবুক বুস্টিং লিংক ক্লিপবোর্ডে কপি হয়েছে!');
+        setTimeout(() => setCopiedComboId(null), 3500);
+      });
+    } else {
+      notifySuccess(`লিংক: ${url}`);
+    }
+  };
+
+  const loadComboCharts = () => {
+    fetchAllComboCharts().then((list) => {
+      setComboChartsList(list);
+    });
+  };
+
+  useEffect(() => {
+    loadComboCharts();
+  }, []);
+
+  const handleOpenAddCombo = () => {
+    setEditingComboId(null);
+    setComboFormData({
+      title: '',
+      price: 0,
+      packageSize: '৩ পিস স্পেশাল কম্বো',
+      shape: 'circle' as ComboChartShape,
+      categoryId: 'all',
+      isActive: true,
+      productIds: [],
+    });
+    setComboProductCategoryFilter('all');
+    setComboProductSearch('');
+    setIsComboFormModalOpen(true);
+  };
+
+  const handleOpenEditCombo = (chart: ComboChart) => {
+    setEditingComboId(chart.id);
+    setComboFormData({
+      title: chart.title,
+      price: chart.price,
+      packageSize: String(chart.packageSize),
+      shape: (chart.shape || 'circle') as ComboChartShape,
+      categoryId: chart.categoryId || 'all',
+      isActive: chart.isActive,
+      productIds: [...chart.productIds],
+    });
+    setComboProductCategoryFilter('all');
+    setComboProductSearch('');
+    setIsComboFormModalOpen(true);
+  };
+
+  const handleSaveCombo = async () => {
+    if (!comboFormData.title.trim()) {
+      notifyError('কম্বো চার্ট টাইটেল প্রদান করুন।');
+      return;
+    }
+    if (comboFormData.productIds.length === 0) {
+      notifyError('কম্বোতে অন্তত ১টি বা ততোধিক প্রোডাক্ট নির্বাচন করুন।');
+      return;
+    }
+
+    if (editingComboId) {
+      const res = await updateComboChart(editingComboId, {
+        title: comboFormData.title.trim(),
+        price: Number(comboFormData.price),
+        packageSize: comboFormData.packageSize.trim(),
+        shape: comboFormData.shape,
+        categoryId: comboFormData.categoryId !== 'all' ? comboFormData.categoryId : undefined,
+        isActive: comboFormData.isActive,
+        productIds: comboFormData.productIds,
+      });
+      if (res.success) {
+        notifySuccess('কম্বো চার্ট সফলভাবে আপডেট হয়েছে!');
+      }
+    } else {
+      const res = await createComboChart({
+        title: comboFormData.title.trim(),
+        price: Number(comboFormData.price),
+        packageSize: comboFormData.packageSize.trim(),
+        shape: comboFormData.shape,
+        categoryId: comboFormData.categoryId !== 'all' ? comboFormData.categoryId : undefined,
+        isActive: comboFormData.isActive,
+        productIds: comboFormData.productIds,
+      });
+      if (res.success) {
+        notifySuccess('নতুন কম্বো চার্ট ডাটাবেসে সফলভাবে যুক্ত হয়েছে!');
+      }
+    }
+    loadComboCharts();
+    setIsComboFormModalOpen(false);
+  };
+
+  const handleToggleComboActive = async (chart: ComboChart) => {
+    await updateComboChart(chart.id, { isActive: !chart.isActive });
+    loadComboCharts();
+    notifySuccess(`কম্বো চার্ট ${!chart.isActive ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করা হয়েছে!`);
+  };
+
+  const handleDeleteCombo = async (id: string) => {
+    if (window.confirm('আপনি কি এই কম্বো চার্টটি ডাটাবেস থেকে মুছে ফেলতে চান?')) {
+      await deleteComboChart(id);
+      loadComboCharts();
+      notifySuccess('কম্বো চার্ট সফলভাবে মুছে ফেলা হয়েছে!');
+    }
+  };
 
   // Helper for notification
   const notifySuccess = (msg: string) => {
@@ -470,6 +609,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const navTabs = [
     { id: 'overview', name: 'ওভারভিউ ও স্ট্যাটস', icon: LayoutDashboard },
     { id: 'orders', name: `অর্ডার ও কাস্টমার (${ordersList.length})`, icon: ClipboardList, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
+    { id: 'combo', name: `কম্বো চার্ট প্যাকেজ (${comboChartsList.length})`, icon: PieChart },
     { id: 'sections', name: 'সেকশন সাজানো (Section Order)', icon: Layers },
     { id: 'header', name: 'হেডার ও মেনু', icon: Menu },
     { id: 'hero', name: 'হিরো ও ব্যানার', icon: Sparkles },
@@ -1176,6 +1316,324 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ==================================================== */}
+          {/* 2.5 COMBO CHART DATABASE MANAGER TAB */}
+          {/* ==================================================== */}
+          {activeTab === 'combo' && (
+            <div className="space-y-6 max-w-6xl">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+                      কম্বো চার্ট প্যাকেজ কালেকশন (Combo Charts Manager)
+                    </h2>
+                    <span className="text-xs font-black bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      {comboChartsList.length} টি সক্রিয়/তৈরিকৃত
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    ডাটাবেস থেকে সরাসরি কম্বো চার্টের নাম, টাইটেল, প্রাইস, সাইজ এবং অন্তর্ভুক্ত প্রোডাক্ট পরিবর্তন ও সাজান।
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={loadComboCharts}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 cursor-pointer"
+                    title="ডাটাবেস রিফ্রেশ করুন"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>রিফ্রেশ</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenAddCombo}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ নতুন কম্বো তৈরি করুন</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Design & Mobile & Image Guidelines Banner */}
+              <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-md border border-emerald-800/40 space-y-3">
+                <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                  <Sparkles className="w-4 h-4" />
+                  <span>💡 কম্বো চার্ট ছবি ও মোবাইল ডিসপ্লে গাইডলাইন (Image & Mobile Guide)</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                  <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/10 space-y-1">
+                    <span className="font-extrabold text-amber-200 block text-[13px]">📸 পারফেক্ট ছবির সাইজ ও অনুপাত</span>
+                    <p className="text-slate-200 leading-relaxed">
+                      আউটার সেকশন পাই-চার্টের জন্য <b>১:১ স্কয়ার (Square)</b> সাইজের ছবি দিন। সেরা রেজোলিউশন হলো <b>800 × 800 px</b> (অথবা ন্যূনতম 600 × 600 px)।
+                    </p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/10 space-y-1">
+                    <span className="font-extrabold text-amber-200 block text-[13px]">🎯 সেন্টারিং ও প্যাডিং টিপস</span>
+                    <p className="text-slate-200 leading-relaxed">
+                      পণ্যের ছবিটি ফ্রেমের ঠিক মাঝখানে রাখবেন এবং চারপাশে <b>২০%–২৫% খালি জায়গা</b> রাখুন, যাতে কার্ভড পাই স্লাইসে ছবি সুন্দর ফুটে ওঠে এবং কোনো অংশ না কাটে।
+                    </p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/10 space-y-1">
+                    <span className="font-extrabold text-amber-200 block text-[13px]">📱 মোবাইল ভার্শন ও সাইজ XL</span>
+                    <p className="text-slate-200 leading-relaxed">
+                      ডিফল্ট চার্ট সাইজ <b>XL</b> সেট করা হয়েছে। মোবাইল ব্যবহারকারীদের জন্য আউটার কার্ড এবং লেবেল স্বয়ংক্রিয়ভাবে রেসপনসিভ হয়ে স্ক্রিনে ফিট হয়ে যাবে।
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Combo Charts List */}
+              {comboChartsList.length === 0 ? (
+                <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto text-3xl">
+                    🥧
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">কোনো কম্বো চার্ট পাওয়া যায়নি</h3>
+                  <p className="text-sm text-slate-500 max-w-md mx-auto">
+                    আপনার শপে এখনো কোনো কম্বো চার্ট যোগ করা হয়নি। গ্রাহকদের স্পেশাল অফার দেখাতে এখনই নতুন কম্বো তৈরি করুন।
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleOpenAddCombo}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition shadow-xs cursor-pointer"
+                  >
+                    + প্রথম কম্বো চার্ট তৈরি করুন
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  {comboChartsList.map((chart) => {
+                    const productsInChart = chart.productIds
+                      .map((pid) => data.products.find((p) => p.id === pid))
+                      .filter(Boolean) as Product[];
+
+                    const sumOriginal = productsInChart.reduce(
+                      (acc, p) => acc + (p.originalPrice || p.price),
+                      0
+                    );
+                    const saving = sumOriginal > chart.price ? sumOriginal - chart.price : 0;
+                    const catObj = data.categories.find((c) => c.id === chart.categoryId);
+
+                    return (
+                      <div
+                        key={chart.id}
+                        className={`bg-white border rounded-3xl p-5 sm:p-6 transition-all duration-300 shadow-xs flex flex-col justify-between ${
+                          chart.isActive
+                            ? 'border-slate-200 hover:border-emerald-500/60'
+                            : 'border-slate-200/60 opacity-70 bg-slate-50/50'
+                        }`}
+                      >
+                        <div className="space-y-4">
+                          {/* Top Badges & Toggle */}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleComboActive(chart)}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition cursor-pointer ${
+                                  chart.isActive
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                                }`}
+                                title="ক্লিক করে চালু/বন্ধ করুন"
+                              >
+                                <span
+                                  className={`w-2 h-2 rounded-full ${
+                                    chart.isActive ? 'bg-emerald-600 animate-pulse' : 'bg-slate-400'
+                                  }`}
+                                />
+                                <span>{chart.isActive ? '✓ সক্রিয় (Active)' : 'নিষ্ক্রিয় (Off)'}</span>
+                              </button>
+
+                              {chart.packageSize && (
+                                <span className="text-[11px] font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                                  ✨ {chart.packageSize}
+                                </span>
+                              )}
+
+                              {catObj && (
+                                <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                                  {catObj.icon} {catObj.name}
+                                </span>
+                              )}
+
+                              {chart.shape && (
+                                <span className="text-[11px] font-bold text-emerald-900 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                  {chart.shape === 'flower'
+                                    ? '🪷 ফ্লাওয়ার'
+                                    : chart.shape === 'hexagon'
+                                    ? '⬡ হেক্সাগন'
+                                    : chart.shape === 'octagon'
+                                    ? '🛑 অক্টাগন'
+                                    : chart.shape === 'squircle'
+                                    ? '▢ স্কোয়ার্কল'
+                                    : chart.shape === 'diamond'
+                                    ? '💎 ডায়মন্ড'
+                                    : '⭕ রাউন্ড'}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* ID tag */}
+                            <span className="font-mono text-[10px] text-slate-400">
+                              #{chart.id.slice(0, 8)}
+                            </span>
+                          </div>
+
+                          {/* Title & Price */}
+                          <div className="flex items-start justify-between gap-3">
+                            <h3 className="font-black text-slate-900 text-base sm:text-lg leading-tight">
+                              {chart.title}
+                            </h3>
+                            <div className="text-right shrink-0">
+                              <span className="font-mono text-xl sm:text-2xl font-black text-emerald-800 block">
+                                ৳{chart.price.toLocaleString('en-BD')}
+                              </span>
+                              {saving > 0 && (
+                                <span className="text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.2 rounded-md inline-block">
+                                  সাশ্রয় ৳{saving.toLocaleString('en-BD')}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Included Products List Preview */}
+                          <div className="space-y-2 pt-2 border-t border-slate-100">
+                            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                              প্যাকেজের পণ্যসমূহ ({productsInChart.length}টি):
+                            </span>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {productsInChart.map((p, idx) => (
+                                <div
+                                  key={p.id}
+                                  className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200/70"
+                                >
+                                  <img
+                                    src={p.image}
+                                    alt={p.name}
+                                    className="w-8 h-8 rounded-lg object-cover shrink-0 bg-white border border-slate-200"
+                                  />
+                                  <div className="min-w-0">
+                                    <p className="text-[11px] font-bold text-slate-800 truncate">
+                                      #{idx + 1} {p.name}
+                                    </p>
+                                    <span className="text-[10px] font-bold text-emerald-700">
+                                      ৳{p.price}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* 📢 Facebook Ads / Direct Boost Link Bar */}
+                          <div className="mt-3.5 p-3 bg-gradient-to-r from-blue-50/90 via-indigo-50/80 to-blue-50/70 border border-blue-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 text-blue-950 font-black text-xs mb-1">
+                                <Share2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                <span>ফেসবুক বুস্টিং স্বাধীন লিংক (Facebook Ads):</span>
+                              </div>
+                              <div className="font-mono text-[11px] text-blue-800 truncate bg-white/95 border border-blue-200/80 rounded-lg px-2.5 py-1 select-all shadow-2xs">
+                                {typeof window !== 'undefined' ? `${window.location.origin}/?combo=${chart.id}` : `/?combo=${chart.id}`}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyComboLink(chart.id)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 ${
+                                  copiedComboId === chart.id
+                                    ? 'bg-emerald-600 text-white shadow-emerald-600/20'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20'
+                                }`}
+                                title="ফেসবুক বুস্টিং বা ক্যাম্পেইনে ব্যবহারের জন্য লিংক কপি করুন"
+                              >
+                                {copiedComboId === chart.id ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>কপি হয়েছে!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3.5 h-3.5" />
+                                    <span>লিংক কপি</span>
+                                  </>
+                                )}
+                              </button>
+
+                              <a
+                                href={`/?combo=${chart.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 bg-white hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition border border-blue-200 cursor-pointer flex items-center justify-center shadow-2xs"
+                                title="সরাসরি নতুন ট্যাবে ল্যান্ডিং পেজ প্রিভিউ দেখুন"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-4 mt-4 border-t border-slate-100">
+                          {/* Quick Shape Selector on the Card */}
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-slate-500">শেপ:</span>
+                            <select
+                              value={chart.shape || 'circle'}
+                              onChange={async (e) => {
+                                const newShape = e.target.value as ComboChartShape;
+                                await updateComboChart(chart.id, { shape: newShape });
+                                notifySuccess(`কম্বোর শেপ সফলভাবে পরিবর্তন করা হয়েছে!`);
+                                loadComboCharts();
+                              }}
+                              className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-lg px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              title="এডমিন প্যানেল থেকে এই কম্বোর চার্ট শেপ নির্ধারণ করুন"
+                            >
+                              <option value="circle">⭕ রাউন্ড (Circle)</option>
+                              <option value="hexagon">⬡ হেক্সাগন (Hexagon)</option>
+                              <option value="flower">🪷 ফ্লাওয়ার (Flower)</option>
+                              <option value="octagon">🛑 অক্টাগন (Octagon)</option>
+                              <option value="squircle">▢ স্কোয়ার্কল (Squircle)</option>
+                              <option value="diamond">💎 ডায়মন্ড (Diamond)</option>
+                            </select>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditCombo(chart)}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 cursor-pointer"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                              <span>এডিট করুন</span>
+                            </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCombo(chart.id)}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition border border-rose-200 cursor-pointer"
+                            title="কম্বো চার্ট মুছে ফেলুন"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>মুছুন</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                </div>
+              )}
             </div>
           )}
 
@@ -2864,13 +3322,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           }}
           product={selectedProduct}
           categories={data.categories}
-          onSave={(savedProduct) => {
+          allProducts={data.products}
+          onSave={async (savedProduct, comboPayload) => {
             if (selectedProduct) {
               updateProduct(savedProduct);
               notifySuccess('প্রোডাক্ট সফলভাবে আপডেট হয়েছে!');
             } else {
               addProduct(savedProduct);
               notifySuccess('নতুন প্রোডাক্ট সফলভাবে যুক্ত হয়েছে!');
+            }
+            if (comboPayload) {
+              await createComboChart(comboPayload);
+              notifySuccess('ক্যাটাগরি কম্বো চার্ট সফলভাবে তৈরি হয়েছে!');
             }
           }}
         />
@@ -2892,6 +3355,350 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
             notifySuccess(`অর্ডার ${orderId}-এর স্ট্যাটাস পরিবর্তন করা হয়েছে!`);
           }}
         />
+      )}
+
+      {/* Combo Chart Add/Edit Modal */}
+      {isComboFormModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full border border-slate-200 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold shadow-xs">
+                  <PieChart className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">
+                    {editingComboId ? 'কম্বো চার্ট তথ্য পরিবর্তন করুন' : 'নতুন কম্বো চার্ট তৈরি করুন'}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    টাইটেল, মূল্য, সাইজ এবং অন্তর্ভুক্ত পণ্য ডাটাবেসে সেভ করুন
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsComboFormModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition cursor-pointer"
+                title="বন্ধ করুন"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form Content */}
+            <div className="p-6 overflow-y-auto space-y-5 flex-1">
+              {/* Facebook Ads Boost Link Box in Modal */}
+              <div className="p-3.5 bg-gradient-to-r from-blue-50/90 via-indigo-50/80 to-blue-50/70 border border-blue-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 text-blue-950 font-black text-xs mb-1">
+                    <Share2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>ফেসবুক বুস্টিং স্বাধীন লিংক (Facebook Ads Direct Link):</span>
+                  </div>
+                  <div className="font-mono text-[11px] text-blue-800 truncate bg-white/95 border border-blue-200/80 rounded-lg px-2.5 py-1">
+                    {editingComboId 
+                      ? `${typeof window !== 'undefined' ? window.location.origin : ''}/?combo=${editingComboId}`
+                      : '⚡ কম্বো চার্ট সেভ করার সাথে সাথেই প্রতিটি কম্বোর জন্য এই লিংক প্রস্তুত হয়ে যাবে'}
+                  </div>
+                </div>
+                {editingComboId && (
+                  <button
+                    type="button"
+                    onClick={() => handleCopyComboLink(editingComboId)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs active:scale-95 ${
+                      copiedComboId === editingComboId
+                        ? 'bg-emerald-600 text-white shadow-emerald-600/20'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20'
+                    }`}
+                  >
+                    {copiedComboId === editingComboId ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>কপি হয়েছে!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>লিংক কপি</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {/* Field 1: Title */}
+              <div>
+                <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                  কম্বো চার্ট টাইটেল / নাম *
+                </label>
+                <input
+                  type="text"
+                  value={comboFormData.title}
+                  onChange={(e) => setComboFormData({ ...comboFormData, title: e.target.value })}
+                  placeholder="যেমন: সৌদি গোল্ডেন সুক্কারি খেজুর স্পেশাল কম্বো"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
+                />
+              </div>
+
+              {/* Field 2 & 3: Price & Package Size */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                    কম্বো বিক্রয় মূল্য (৳) *
+                  </label>
+                  <input
+                    type="number"
+                    value={comboFormData.price || ''}
+                    onChange={(e) => setComboFormData({ ...comboFormData, price: Number(e.target.value) })}
+                    placeholder="যেমন: 1513"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                    প্যাকেজ সাইজ / বর্ণনা
+                  </label>
+                  <input
+                    type="text"
+                    value={comboFormData.packageSize}
+                    onChange={(e) => setComboFormData({ ...comboFormData, packageSize: e.target.value })}
+                    placeholder="যেমন: ৩ পিস স্পেশাল কম্বো বা ১ কেজি + ৫০০ গ্রাম"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
+                  />
+                </div>
+              </div>
+
+              {/* Field 4 & 5: Category & Active status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                <div>
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                    ক্যাটাগরি লিংক (ঐচ্ছিক)
+                  </label>
+                  <select
+                    value={comboFormData.categoryId}
+                    onChange={(e) => setComboFormData({ ...comboFormData, categoryId: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 bg-white"
+                  >
+                    <option value="all">সকল ক্যাটাগরি (সাধারণ শোকেস)</option>
+                    {data.categories.filter((c) => c.id !== 'all').map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.icon} {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="pt-2 sm:pt-6">
+                  <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50/70 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={comboFormData.isActive}
+                      onChange={(e) => setComboFormData({ ...comboFormData, isActive: e.target.checked })}
+                      className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-slate-800">
+                      হোমপেজে সক্রিয়ভাবে প্রদর্শন করুন
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Field: Chart Outer Shape Selector */}
+              <div className="pt-2">
+                <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
+                  চার্ট আউটার শেপ (Chart Outer Shape)
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {[
+                    { id: 'circle', name: 'রাউন্ড (Circle)', icon: '⭕', desc: 'বৃত্তাকার ক্লাসিক' },
+                    { id: 'hexagon', name: 'হেক্সাগন (Hexagon)', icon: '⬡', desc: '৬-কোণ বিশিষ্ট জ্যামিতিক' },
+                    { id: 'flower', name: 'ফ্লাওয়ার (Flower)', icon: '🪷', desc: 'বাঁকানো পাপড়ি অর্গানিক' },
+                    { id: 'octagon', name: 'অক্টাগন (Octagon)', icon: '🛑', desc: '৮-কোণ ইসলামিক নকশা' },
+                    { id: 'squircle', name: 'স্কোয়ার্কল (Squircle)', icon: '▢', desc: 'মডার্ন সফট স্কয়ার' },
+                    { id: 'diamond', name: 'ডায়মন্ড (Diamond)', icon: '💎', desc: 'হীরক আকৃতি' },
+                  ].map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setComboFormData({ ...comboFormData, shape: s.id as ComboChartShape })}
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col gap-1 ${
+                        comboFormData.shape === s.id
+                          ? 'border-emerald-600 bg-emerald-50/80 ring-2 ring-emerald-500/20 text-emerald-950 font-bold'
+                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-base">{s.icon}</span>
+                        <span className="text-xs font-bold">{s.name}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500">{s.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Field 6: Products Selector */}
+              <div className="space-y-3 pt-3 border-t border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
+                      কম্বোতে অন্তর্ভুক্ত পণ্য নির্বাচন করুন ({comboFormData.productIds.length}টি নির্বাচিত)
+                    </label>
+                    <p className="text-[11px] text-slate-500">
+                      কম্বো পাই-চার্টে এই পণ্যগুলোর ছবি ও নাম প্রদর্শিত হবে
+                    </p>
+                  </div>
+
+                  {/* Search inside modal */}
+                  <div className="relative w-full sm:w-60">
+                    <input
+                      type="text"
+                      placeholder="পণ্য খুঁজুন..."
+                      value={comboProductSearch}
+                      onChange={(e) => setComboProductSearch(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
+                    />
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                  </div>
+                </div>
+
+                {/* Category filter tabs */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  <button
+                    type="button"
+                    onClick={() => setComboProductCategoryFilter('all')}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition ${
+                      comboProductCategoryFilter === 'all'
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    সকল পণ্য
+                  </button>
+                  {data.categories.filter((c) => c.id !== 'all').map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setComboProductCategoryFilter(cat.id)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition flex items-center gap-1 ${
+                        comboProductCategoryFilter === cat.id
+                          ? 'bg-emerald-700 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Product checkboxes grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto p-1 border border-slate-100 rounded-2xl bg-slate-50/50">
+                  {data.products
+                    .filter((p) => {
+                      if (comboProductCategoryFilter !== 'all' && p.category !== comboProductCategoryFilter) {
+                        return false;
+                      }
+                      if (comboProductSearch.trim()) {
+                        return p.name.toLowerCase().includes(comboProductSearch.toLowerCase());
+                      }
+                      return true;
+                    })
+                    .map((product) => {
+                      const isSelected = comboFormData.productIds.includes(product.id);
+                      return (
+                        <div
+                          key={product.id}
+                          onClick={() => {
+                            if (isSelected) {
+                              setComboFormData({
+                                ...comboFormData,
+                                productIds: comboFormData.productIds.filter((id) => id !== product.id),
+                              });
+                            } else {
+                              setComboFormData({
+                                ...comboFormData,
+                                productIds: [...comboFormData.productIds, product.id],
+                              });
+                            }
+                          }}
+                          className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-emerald-50 border-emerald-500 shadow-2xs ring-1 ring-emerald-500'
+                              : 'bg-white border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}}
+                            className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer shrink-0"
+                          />
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-10 h-10 rounded-lg object-cover bg-white border border-slate-200 shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-slate-900 truncate">
+                              {product.name}
+                            </p>
+                            <span className="text-[11px] font-mono font-black text-emerald-700">
+                              ৳{product.price}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                {/* Live calculation bar */}
+                {comboFormData.productIds.length > 0 && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-emerald-950">
+                    <span>
+                      নির্বাচিত {comboFormData.productIds.length}টি পণ্যের পৃথক মূল্য: ৳
+                      {comboFormData.productIds
+                        .map((pid) => data.products.find((p) => p.id === pid)?.price || 0)
+                        .reduce((a, b) => a + b, 0)}
+                    </span>
+                    <span>
+                      কম্বো মূল্য: ৳{comboFormData.price || 0}
+                    </span>
+                    <span className="text-rose-700">
+                      কাস্টমার সেভ করবে: ৳
+                      {Math.max(
+                        0,
+                        comboFormData.productIds
+                          .map((pid) => data.products.find((p) => p.id === pid)?.price || 0)
+                          .reduce((a, b) => a + b, 0) - (comboFormData.price || 0)
+                      )}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsComboFormModalOpen(false)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+              >
+                বাতিল
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCombo}
+                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+              >
+                {editingComboId ? 'পরিবর্তন সংরক্ষণ করুন' : 'কম্বো চার্ট তৈরি করুন'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
