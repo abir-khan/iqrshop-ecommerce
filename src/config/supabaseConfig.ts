@@ -9,8 +9,8 @@
 // Permanent hardcoded fallback credentials
 // Paste your project URL and Anon Public Key here if not using .env
 export const PERMANENT_SUPABASE_CONFIG = {
-  url: ((import.meta as any).env?.VITE_SUPABASE_URL || '').trim(),
-  anonKey: ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '').trim(),
+  url: 'https://anvgipmxlsiwhzplsnne.supabase.co',
+  anonKey: 'sb_publishable_fuzPA05yUMvsIZ-ZKxwfRw_8nIRQaYe',
 };
 
 export const hasPermanentConfig = Boolean(
