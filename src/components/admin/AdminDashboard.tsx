@@ -3483,17 +3483,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           product={selectedProduct}
           categories={data.categories}
           allProducts={data.products}
-          onSave={async (savedProduct, comboPayload) => {
+          onSave={(savedProduct) => {
             if (selectedProduct) {
               updateProduct(savedProduct);
               notifySuccess('প্রোডাক্ট সফলভাবে আপডেট হয়েছে!');
             } else {
               addProduct(savedProduct);
               notifySuccess('নতুন প্রোডাক্ট সফলভাবে যুক্ত হয়েছে!');
-            }
-            if (comboPayload) {
-              await createComboChart(comboPayload);
-              notifySuccess('ক্যাটাগরি কম্বো চার্ট সফলভাবে তৈরি হয়েছে!');
             }
           }}
         />

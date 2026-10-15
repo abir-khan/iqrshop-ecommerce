@@ -80,6 +80,11 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
   // Filtering logic
   const filteredProducts = useMemo(() => {
     return data.products.filter((product) => {
+      // Exclude combo packages from product listing (combos are not individual products)
+      if (product.id.startsWith('combo-') || product.category === 'combo') {
+        return false;
+      }
+
       // Category filter
       if (selectedCategory !== 'all') {
         if (selectedCategory === 'deals') {
@@ -127,7 +132,7 @@ export const CategoryView: React.FC<CategoryViewProps> = ({
     (selectedCategory === 'deals'
       ? { id: 'deals', name: 'স্পেশাল ডিল ও অফার', icon: '⚡' }
       : selectedCategory === 'gift'
-      ? { id: 'gift', name: 'গিফট কম্বো ও প্যাকেজ', icon: '🎁' }
+      ? { id: 'gift', name: 'গিফট কালেকশন', icon: '🎁' }
       : { id: 'all', name: 'সকল পণ্য', icon: '✨' });
 
   const handleCardSizeSelect = (productId: string, size: string) => {

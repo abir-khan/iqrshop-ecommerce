@@ -27,7 +27,9 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
   onToggleWishlist,
 }) => {
   const { data } = useCms();
-  const products = data.products;
+  const products = useMemo(() => {
+    return data.products.filter((p) => !p.id.startsWith('combo-') && p.category !== 'combo');
+  }, [data.products]);
 
   // Active combo charts loaded from DB/cache to resolve the featured combo
   const [comboCharts, setComboCharts] = useState<ComboChart[]>([]);
@@ -161,10 +163,10 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
                           </span>
                         </div>
                         <h3 className="text-lg sm:text-2xl font-black text-zinc-900 tracking-tight">
-                          {featuredCombo ? `${featuredCombo.title} — সংশ্লিষ্ট কালেকশন` : 'নির্বাচিত সেরা পণ্যসমূহ'}
+                          {featuredCategoryObj.name} কালেকশন
                         </h3>
                         <p className="text-xs sm:text-sm text-zinc-500">
-                          এই অফার প্যাকেজের সাথে মানানসই ও জনপ্রিয় শীর্ষ পণ্যগুলো এক নজরে দেখুন
+                          ১০০% খাঁটি ও সেরা মানের পণ্যগুলো এক নজরে দেখুন
                         </p>
                       </div>
 
@@ -172,7 +174,7 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
                         onClick={() => onSelectCategory(featuredCategoryId)}
                         className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-800 hover:text-emerald-950 transition cursor-pointer self-start sm:self-auto group"
                       >
-                        <span>এই ক্যাটাগরির ফিল্টার পেজ</span>
+                        <span>সকল {featuredCategoryObj.name} দেখুন</span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
