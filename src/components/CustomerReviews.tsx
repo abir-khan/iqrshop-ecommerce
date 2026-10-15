@@ -75,54 +75,72 @@ export const CustomerReviews: React.FC = () => {
       </div>
 
       {/* MOBILE 1-CARD WITH BULLET DOTS */}
-      <div className="sm:hidden space-y-1">
-        {topThreeReviews.length > 0 && (
-          <div 
-            onClick={openReviewsList}
-            className="bg-[#F8F9F8] p-2.5 rounded-xl border border-zinc-200 shadow-xs cursor-pointer active:scale-98 transition-all"
-          >
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <div className="flex items-center gap-2 min-w-0">
-                <img
-                  src={topThreeReviews[activeMobileIndex]?.avatar}
-                  alt={topThreeReviews[activeMobileIndex]?.name}
-                  className="w-7 h-7 rounded-full object-cover border border-zinc-300 shrink-0"
-                />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1">
-                    <h3 className="text-xs font-bold text-zinc-900 truncate">
-                      {topThreeReviews[activeMobileIndex]?.name}
-                    </h3>
+      <div className="sm:hidden space-y-1.5">
+        {topThreeReviews.length > 0 && (() => {
+          const currentReview = topThreeReviews[activeMobileIndex];
+          if (!currentReview) return null;
+          const isMobileExpanded = expandedReviews[currentReview.id];
+
+          return (
+            <div 
+              onClick={openReviewsList}
+              className="bg-[#F8F9F8] p-3 rounded-2xl border border-zinc-200/90 shadow-2xs cursor-pointer active:scale-[0.99] transition-all"
+            >
+              {/* Header: Avatar + Name + Location on 1 single line + Rating */}
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <img
+                    src={currentReview.avatar}
+                    alt={currentReview.name}
+                    className="w-7 h-7 rounded-full object-cover border border-zinc-300 shrink-0"
+                  />
+                  <div className="flex items-center gap-1.5 min-w-0 truncate">
+                    <span className="text-xs font-bold text-zinc-900 truncate">
+                      {currentReview.name}
+                    </span>
                     <CheckCircle2 className="w-3 h-3 text-emerald-700 shrink-0" />
+                    <span className="text-[10px] text-zinc-300 shrink-0">•</span>
+                    <span className="text-[10.5px] text-zinc-500 truncate">
+                      {currentReview.location}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-zinc-500 truncate">
-                    {topThreeReviews[activeMobileIndex]?.location}
-                  </p>
+                </div>
+
+                <div className="flex items-center gap-0.5 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200/80 shrink-0">
+                  <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                  <span className="text-[10px] font-bold text-amber-900">
+                    {currentReview.rating}.0
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-0.5 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
-                <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
-                <span className="text-[10px] font-bold text-amber-900">
-                  {topThreeReviews[activeMobileIndex]?.rating}.0
+              {/* Review text with line-clamp: 3 + "আরও পড়ুন" button */}
+              <div className="my-1">
+                <p className={`text-xs text-zinc-700 leading-snug font-normal ${!isMobileExpanded ? 'line-clamp-3' : ''}`}>
+                  "{currentReview.comment}"
+                </p>
+                {currentReview.comment.length > 70 && (
+                  <button
+                    type="button"
+                    onClick={(e) => toggleExpandReview(currentReview.id, e)}
+                    className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 mt-1 cursor-pointer underline inline-flex items-center gap-0.5"
+                  >
+                    {isMobileExpanded ? 'সংক্ষিপ্ত করুন' : 'আরও পড়ুন'}
+                  </button>
+                )}
+              </div>
+
+              <div className="mt-2 pt-2 border-t border-zinc-200/70 flex items-center justify-between text-[10px]">
+                <span className="text-emerald-800 font-semibold truncate max-w-[65%]">
+                  পণ্য: {currentReview.product}
+                </span>
+                <span className="text-zinc-500 font-bold flex items-center gap-0.5">
+                  <ThumbsUp className="w-2.5 h-2.5 text-zinc-400" /> ভেরিফাইড ক্রেতা
                 </span>
               </div>
             </div>
-
-            <p className="text-xs text-zinc-700 leading-snug line-clamp-2">
-              "{topThreeReviews[activeMobileIndex]?.comment}"
-            </p>
-
-            <div className="mt-1.5 pt-1.5 border-t border-zinc-200/70 flex items-center justify-between text-[10px]">
-              <span className="text-emerald-800 font-semibold truncate max-w-[65%]">
-                পণ্য: {topThreeReviews[activeMobileIndex]?.product}
-              </span>
-              <span className="text-zinc-500 font-bold flex items-center gap-0.5">
-                <ThumbsUp className="w-2.5 h-2.5 text-zinc-400" /> ভেরিফাইড ক্রেতা
-              </span>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Bullet Dots Slider */}
         <div className="flex justify-center items-center gap-1.5 pt-0.5">
@@ -152,22 +170,21 @@ export const CustomerReviews: React.FC = () => {
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <img
                       src={review.avatar}
                       alt={review.name}
                       className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-xs shrink-0 group-hover:scale-105 transition-transform"
                     />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1">
-                        <h3 className="text-sm font-bold text-zinc-900 truncate">
-                          {review.name}
-                        </h3>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                      </div>
-                      <p className="text-xs text-zinc-500 truncate">
+                    <div className="flex items-center gap-1.5 min-w-0 truncate">
+                      <h3 className="text-sm font-bold text-zinc-900 truncate">
+                        {review.name}
+                      </h3>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                      <span className="text-xs text-zinc-300 shrink-0">•</span>
+                      <span className="text-xs text-zinc-500 truncate">
                         {review.location}
-                      </p>
+                      </span>
                     </div>
                   </div>
 
@@ -189,7 +206,7 @@ export const CustomerReviews: React.FC = () => {
                       onClick={(e) => toggleExpandReview(review.id, e)}
                       className="text-[11px] font-bold text-emerald-800 hover:text-emerald-950 mt-1 cursor-pointer underline"
                     >
-                      {isExpanded ? 'সংক্ষিপ্ত করুন' : 'সম্পূর্ণ পড়ুন...'}
+                      {isExpanded ? 'সংক্ষিপ্ত করুন' : 'আরও পড়ুন'}
                     </button>
                   )}
                 </div>
