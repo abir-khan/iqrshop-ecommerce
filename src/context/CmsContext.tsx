@@ -23,7 +23,8 @@ import {
   saveCmsDataToSupabase,
 } from '../lib/supabase';
 
-const LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v1';
+const LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v2';
+const LEGACY_LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v1';
 const ADMIN_SESSION_KEY = 'iqrshop_admin_auth_v1';
 
 // Admin Credentials
@@ -88,24 +89,63 @@ const CmsContext = createContext<CmsContextType | null>(null);
 export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<CmsStoreData>(() => {
     try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        return {
+        
+        // Migrate home sections to guarantee combo_chart and category_sections exist
+        let migratedSections: HomeSectionItem[] = Array.isArray(parsed.homeSections) && parsed.homeSections.length > 0
+          ? parsed.homeSections
+              .filter((s: any) => s.id !== 'category_nav' && s.id !== 'showroom_strip')
+              .map((s: any) => (s.id === 'products' ? { ...s, id: 'category_sections', name: 'ফোকাসড কম্বো ক্যাটাগরি প্রোডাক্ট কালেকশন' } : s))
+          : [...(DEFAULT_CMS_DATA.homeSections || [])];
+
+        if (!migratedSections.some((s) => s.id === 'combo_chart')) {
+          migratedSections.splice(1, 0, {
+            id: 'combo_chart',
+            name: 'সার্কুলার কম্বো চার্ট অফার',
+            description: 'পাই-চার্ট ডিজাইনে সাজানো আকর্ষণীয় কম্বো প্যাকেজ ও অফার',
+            enabled: true,
+            order: 2,
+          });
+        }
+        if (!migratedSections.some((s) => s.id === 'category_sections')) {
+          migratedSections.splice(2, 0, {
+            id: 'category_sections',
+            name: 'ফোকাসড কম্বো ক্যাটাগরি প্রোডাক্ট কালেকশন',
+            description: 'নির্বাচিত কম্বোর সংশ্লিষ্ট প্রোডাক্ট এবং অন্যান্য ক্যাটাগরি এক্সপ্লোরার',
+            enabled: true,
+            order: 3,
+          });
+        }
+
+        const mergedSiteSettings: SiteSettings = {
+          ...DEFAULT_CMS_DATA.siteSettings,
+          ...(parsed.siteSettings || {}),
+          featuredComboId: parsed.siteSettings?.featuredComboId || DEFAULT_CMS_DATA.siteSettings.featuredComboId || 'combo-ramadan-special',
+          featuredProductsLimit: parsed.siteSettings?.featuredProductsLimit || DEFAULT_CMS_DATA.siteSettings.featuredProductsLimit || 8,
+        };
+
+        const migratedData: CmsStoreData = {
           ...DEFAULT_CMS_DATA,
           ...parsed,
-          siteSettings: { ...DEFAULT_CMS_DATA.siteSettings, ...(parsed.siteSettings || {}) },
+          siteSettings: mergedSiteSettings,
           heroData: { ...DEFAULT_CMS_DATA.heroData, ...(parsed.heroData || {}) },
           dualBanners: { ...DEFAULT_CMS_DATA.dualBanners, ...(parsed.dualBanners || {}) },
           policies: { ...DEFAULT_CMS_DATA.policies, ...(parsed.policies || {}) },
           orders: Array.isArray(parsed.orders) && parsed.orders.length > 0 ? parsed.orders : DEFAULT_CMS_DATA.orders,
           categoryBanners: Array.isArray(parsed.categoryBanners) && parsed.categoryBanners.length > 0 ? parsed.categoryBanners : DEFAULT_CMS_DATA.categoryBanners,
           showroomStrip: { ...DEFAULT_CMS_DATA.showroomStrip, ...(parsed.showroomStrip || {}) },
-          homeSections: Array.isArray(parsed.homeSections) && parsed.homeSections.length > 0
-            ? parsed.homeSections.filter((s: any) => s.id !== 'category_nav' && s.id !== 'showroom_strip')
-            : DEFAULT_CMS_DATA.homeSections,
+          homeSections: migratedSections,
           headerNavLinks: Array.isArray(parsed.headerNavLinks) && parsed.headerNavLinks.length > 0 ? parsed.headerNavLinks : DEFAULT_CMS_DATA.headerNavLinks,
         };
+
+        // Save migrated data to new v2 key immediately
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(migratedData));
+        } catch {}
+
+        return migratedData;
       }
     } catch (e) {
       console.error('Failed to load local CMS store:', e);

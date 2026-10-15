@@ -139,8 +139,9 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
               );
 
             case 'category_sections':
+            case 'products' as any:
               return (
-                <div key="category_sections" className="space-y-6 sm:space-y-10">
+                <div key={sec.id} className="space-y-6 sm:space-y-10">
                   {/* 1. Featured Category Products Section (Directly matching Admin's chosen combo) */}
                   <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
                     {/* Section Header */}
