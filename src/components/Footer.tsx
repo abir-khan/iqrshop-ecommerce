@@ -99,7 +99,7 @@ export const Footer: React.FC = () => {
                 <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0 flex-1 w-full">
-                <h4 className="text-[11px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors leading-tight truncate">
+                <h4 className="text-[11px] sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors leading-tight">
                   অরিজিনাল প্রোডাক্ট গ্যারান্টি
                 </h4>
                 <p className="text-[9.5px] sm:text-xs text-zinc-300/80 truncate pt-0.5">

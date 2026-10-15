@@ -96,62 +96,74 @@ export const ShowcaseHeroBanner: React.FC<ShowcaseHeroBannerProps> = ({ onSelect
       </div>
 
       {/* 4 Prominent Guarantee Badges */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mt-3 sm:mt-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mt-3 sm:mt-5 items-stretch">
         {/* 1. ক্যাশ অন ডেলিভারি */}
-        <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-4 border border-stone-200/90 shadow-2xs hover:shadow-md hover:border-emerald-500/40 transition-all duration-300 flex items-center gap-2 sm:gap-3.5">
+        <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-4 border border-stone-200/90 shadow-2xs hover:shadow-md hover:border-emerald-500/40 transition-all duration-300 flex items-center gap-2 sm:gap-3.5 min-h-[68px] sm:min-h-[78px] h-full">
           <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 border border-emerald-500/20 text-emerald-700 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-2xs">
             <Banknote className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div className="min-w-0">
-            <h4 className="text-[11px] sm:text-sm font-black text-stone-900 group-hover:text-emerald-800 transition-colors leading-tight">
+          <div className="min-w-0 flex-1">
+            <h4 
+              className="text-[13.5px] sm:text-[14px] font-black text-stone-900 group-hover:text-emerald-800 transition-colors"
+              style={{ lineHeight: 1.35 }}
+            >
               ক্যাশ অন ডেলিভারি
             </h4>
-            <p className="text-[9.5px] sm:text-xs text-stone-500 mt-0.5 truncate leading-tight">
+            <p className="text-[10px] sm:text-[11.5px] text-stone-400 mt-0.5 truncate leading-tight font-medium">
               পণ্য দেখে মূল্য পরিশোধ
             </p>
           </div>
         </div>
 
         {/* 2. ৭ দিনের রিটার্ন */}
-        <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-4 border border-stone-200/90 shadow-2xs hover:shadow-md hover:border-amber-500/40 transition-all duration-300 flex items-center gap-2 sm:gap-3.5">
+        <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-4 border border-stone-200/90 shadow-2xs hover:shadow-md hover:border-amber-500/40 transition-all duration-300 flex items-center gap-2 sm:gap-3.5 min-h-[68px] sm:min-h-[78px] h-full">
           <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 border border-amber-500/20 text-amber-700 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-amber-500 group-hover:text-stone-950 transition-all duration-300 shadow-2xs">
             <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div className="min-w-0">
-            <h4 className="text-[11px] sm:text-sm font-black text-stone-900 group-hover:text-amber-800 transition-colors leading-tight">
+          <div className="min-w-0 flex-1">
+            <h4 
+              className="text-[13.5px] sm:text-[14px] font-black text-stone-900 group-hover:text-amber-800 transition-colors"
+              style={{ lineHeight: 1.35 }}
+            >
               ৭ দিনের রিটার্ন
             </h4>
-            <p className="text-[9.5px] sm:text-xs text-stone-500 mt-0.5 truncate leading-tight">
+            <p className="text-[10px] sm:text-[11.5px] text-stone-400 mt-0.5 truncate leading-tight font-medium">
               সহজ এক্সচেঞ্জ পলিসি
             </p>
           </div>
         </div>
 
         {/* 3. অরিজিনাল প্রোডাক্ট গ্যারান্টি */}
-        <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-4 border border-stone-200/90 shadow-2xs hover:shadow-md hover:border-purple-500/40 transition-all duration-300 flex items-center gap-2 sm:gap-3.5">
+        <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-4 border border-stone-200/90 shadow-2xs hover:shadow-md hover:border-purple-500/40 transition-all duration-300 flex items-center gap-2 sm:gap-3.5 min-h-[68px] sm:min-h-[78px] h-full">
           <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500/15 to-purple-500/5 border border-purple-500/20 text-purple-700 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-2xs">
             <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div className="min-w-0">
-            <h4 className="text-[11px] sm:text-sm font-black text-stone-900 group-hover:text-purple-800 transition-colors leading-tight truncate">
+          <div className="min-w-0 flex-1">
+            <h4 
+              className="text-[13.5px] sm:text-[14px] font-black text-stone-900 group-hover:text-purple-800 transition-colors"
+              style={{ lineHeight: 1.35 }}
+            >
               অরিজিনাল প্রোডাক্ট গ্যারান্টি
             </h4>
-            <p className="text-[9.5px] sm:text-xs text-stone-500 mt-0.5 truncate leading-tight">
+            <p className="text-[10px] sm:text-[11.5px] text-stone-400 mt-0.5 truncate leading-tight font-medium">
               ১০০% খাঁটি পণ্যের নিশ্চয়তা
             </p>
           </div>
         </div>
 
         {/* 4. ডেলিভারি ২-৫ দিন */}
-        <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-4 border border-stone-200/90 shadow-2xs hover:shadow-md hover:border-teal-500/40 transition-all duration-300 flex items-center gap-2 sm:gap-3.5">
+        <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl bg-white p-2.5 sm:p-4 border border-stone-200/90 shadow-2xs hover:shadow-md hover:border-teal-500/40 transition-all duration-300 flex items-center gap-2 sm:gap-3.5 min-h-[68px] sm:min-h-[78px] h-full">
           <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gradient-to-br from-teal-500/15 to-teal-500/5 border border-teal-500/20 text-teal-700 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300 shadow-2xs">
             <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div className="min-w-0">
-            <h4 className="text-[11px] sm:text-sm font-black text-stone-900 group-hover:text-teal-800 transition-colors leading-tight">
+          <div className="min-w-0 flex-1">
+            <h4 
+              className="text-[13.5px] sm:text-[14px] font-black text-stone-900 group-hover:text-teal-800 transition-colors"
+              style={{ lineHeight: 1.35 }}
+            >
               ডেলিভারি ২-৫ দিন
             </h4>
-            <p className="text-[9.5px] sm:text-xs text-stone-500 mt-0.5 truncate leading-tight">
+            <p className="text-[10px] sm:text-[11.5px] text-stone-400 mt-0.5 truncate leading-tight font-medium">
               সারাদেশে নিরাপদ শিপিং
             </p>
           </div>

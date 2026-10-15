@@ -381,48 +381,68 @@ export const ComboLandingView: React.FC<ComboLandingViewProps> = ({
 
       {/* 5. Four Key Prominent Guarantee Badges */}
       <div className="max-w-5xl mx-auto px-4 mt-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 bg-white p-4 sm:p-6 rounded-3xl border border-stone-200 shadow-sm">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 bg-white p-4 sm:p-6 rounded-3xl border border-stone-200 shadow-sm items-stretch">
           {/* 1. ক্যাশ অন ডেলিভারি */}
-          <div className="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-2 min-h-[64px] sm:min-h-[74px] h-full">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-200/60">
               <Banknote className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-black text-stone-900 leading-tight">ক্যাশ অন ডেলিভারি</p>
-              <p className="text-[10px] sm:text-[11px] text-stone-500 mt-0.5 truncate">পণ্য দেখে মূল্য পরিশোধ</p>
+            <div className="min-w-0 flex-1">
+              <p 
+                className="text-[13.5px] sm:text-[14px] font-black text-stone-900"
+                style={{ lineHeight: 1.35 }}
+              >
+                ক্যাশ অন ডেলিভারি
+              </p>
+              <p className="text-[10px] sm:text-[11.5px] text-stone-400 mt-0.5 truncate leading-tight font-medium">পণ্য দেখে মূল্য পরিশোধ</p>
             </div>
           </div>
 
           {/* 2. ৭ দিনের রিটার্ন */}
-          <div className="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-2 min-h-[64px] sm:min-h-[74px] h-full">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs border border-amber-200/60">
               <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-black text-stone-900 leading-tight">৭ দিনের রিটার্ন</p>
-              <p className="text-[10px] sm:text-[11px] text-stone-500 mt-0.5 truncate">সহজ এক্সচেঞ্জ পলিসি</p>
+            <div className="min-w-0 flex-1">
+              <p 
+                className="text-[13.5px] sm:text-[14px] font-black text-stone-900"
+                style={{ lineHeight: 1.35 }}
+              >
+                ৭ দিনের রিটার্ন
+              </p>
+              <p className="text-[10px] sm:text-[11.5px] text-stone-400 mt-0.5 truncate leading-tight font-medium">সহজ এক্সচেঞ্জ পলিসি</p>
             </div>
           </div>
 
           {/* 3. অরিজিনাল প্রোডাক্ট গ্যারান্টি */}
-          <div className="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-2 min-h-[64px] sm:min-h-[74px] h-full">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-purple-50 text-purple-800 flex items-center justify-center shrink-0 shadow-2xs border border-purple-200/60">
               <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-black text-stone-900 leading-tight truncate">অরিজিনাল প্রোডাক্ট গ্যারান্টি</p>
-              <p className="text-[10px] sm:text-[11px] text-stone-500 mt-0.5 truncate">১০০% আসল ও খাঁটি পণ্য</p>
+            <div className="min-w-0 flex-1">
+              <p 
+                className="text-[13.5px] sm:text-[14px] font-black text-stone-900"
+                style={{ lineHeight: 1.35 }}
+              >
+                অরিজিনাল প্রোডাক্ট গ্যারান্টি
+              </p>
+              <p className="text-[10px] sm:text-[11.5px] text-stone-400 mt-0.5 truncate leading-tight font-medium">১০০% আসল ও খাঁটি পণ্য</p>
             </div>
           </div>
 
           {/* 4. ডেলিভারি ২-৫ দিন */}
-          <div className="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 p-1 sm:p-2 min-h-[64px] sm:min-h-[74px] h-full">
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center shrink-0 shadow-2xs border border-teal-200/60">
               <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-sm font-black text-stone-900 leading-tight">ডেলিভারি ২-৫ দিন</p>
-              <p className="text-[10px] sm:text-[11px] text-stone-500 mt-0.5 truncate">সারাদেশে নিরাপদ শিপিং</p>
+            <div className="min-w-0 flex-1">
+              <p 
+                className="text-[13.5px] sm:text-[14px] font-black text-stone-900"
+                style={{ lineHeight: 1.35 }}
+              >
+                ডেলিভারি ২-৫ দিন
+              </p>
+              <p className="text-[10px] sm:text-[11.5px] text-stone-400 mt-0.5 truncate leading-tight font-medium">সারাদেশে নিরাপদ শিপিং</p>
             </div>
           </div>
         </div>
