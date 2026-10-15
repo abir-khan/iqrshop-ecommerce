@@ -703,7 +703,7 @@ export const ProductComboChart: React.FC<ProductComboChartProps> = ({
 
             {/* 6. Center Circle (The Donut Hole): Pure Price Hero Focus (Shape-adaptive) */}
             <div
-              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[28%] h-[28%] min-w-[90px] min-h-[90px] sm:min-w-[140px] sm:min-h-[140px] ${
+              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] min-w-[96px] min-h-[96px] sm:min-w-[145px] sm:min-h-[145px] ${
                 currentShape === 'squircle'
                   ? 'rounded-2xl sm:rounded-3xl'
                   : currentShape === 'diamond'
@@ -726,16 +726,19 @@ export const ProductComboChart: React.FC<ProductComboChartProps> = ({
               {hoveredProduct ? (
                 /* Dynamic Hover State: Shows item index, clear price, and weight */
                 <div className="flex flex-col items-center justify-center animate-fadeIn w-full px-1">
-                  <span className="text-[9px] sm:text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 sm:px-2 py-0.2 rounded-full mb-0.5">
+                  <span className="text-[8.5px] sm:text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 sm:px-2 py-0.2 rounded-full mb-0.5">
                     আইটেম #{hoveredSliceIndex! + 1}
                   </span>
 
-                  <p className="text-base sm:text-3xl font-black text-rose-600 my-0.5 leading-none tracking-tight">
+                  <p 
+                    className="text-lg sm:text-3xl text-rose-600 my-0.5 leading-none tracking-tight"
+                    style={{ fontWeight: 700 }}
+                  >
                     ৳{hoveredProduct.price.toLocaleString('bn-BD')}
                   </p>
 
                   {hoveredSliceIndex !== null && sliceData[hoveredSliceIndex]?.sizeOrGram && (
-                    <span className="text-[8.5px] sm:text-[11px] font-bold text-amber-900 bg-amber-50 border border-amber-200 px-1 sm:px-1.5 py-0.2 rounded mt-0.5">
+                    <span className="text-[8px] sm:text-[11px] font-bold text-amber-900 bg-amber-50 border border-amber-200 px-1 sm:px-1.5 py-0.2 rounded mt-0.5">
                       {sliceData[hoveredSliceIndex].sizeOrGram}
                     </span>
                   )}
@@ -743,15 +746,18 @@ export const ProductComboChart: React.FC<ProductComboChartProps> = ({
               ) : (
                 /* Default Center State: Dedicated Exclusively to Clear, Bold Price & Savings */
                 <div className="flex flex-col items-center justify-center w-full px-0.5 sm:px-1">
-                  {/* Highlighted "অফার মূল্য" Badge */}
-                  <span className="text-[8.5px] sm:text-[11.5px] font-black text-rose-700 bg-rose-50 border border-rose-300/90 px-1.5 sm:px-2.5 py-0.2 sm:py-0.5 rounded-full shadow-2xs tracking-wide uppercase leading-none flex items-center gap-0.5 sm:gap-1 mb-0.5">
-                    <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-amber-500 shrink-0" />
+                  {/* Highlighted "অফার মূল্য" Badge (Compact & Refined) */}
+                  <span className="text-[7.5px] sm:text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200/90 px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full shadow-2xs tracking-wider uppercase leading-none flex items-center gap-0.5 sm:gap-1 mb-0.5">
+                    <Sparkles className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 text-amber-500 shrink-0" />
                     অফার মূল্য
                   </span>
 
-                  {/* Main Focus: Hero Large Bold Red Price */}
+                  {/* Main Focus: Hero Large Price with font-weight: 700 */}
                   <div className="my-0.5 leading-none">
-                    <span className="text-lg sm:text-3xl lg:text-4xl font-black text-rose-600 tracking-tight leading-none drop-shadow-2xs">
+                    <span 
+                      className="text-xl sm:text-3xl lg:text-4xl text-rose-600 tracking-tight leading-none drop-shadow-2xs"
+                      style={{ fontWeight: 700 }}
+                    >
                       ৳{activeChart.price.toLocaleString('bn-BD')}
                     </span>
                   </div>
@@ -759,11 +765,11 @@ export const ProductComboChart: React.FC<ProductComboChartProps> = ({
                   {/* Savings / Original Price Badge */}
                   {originalTotal > activeChart.price && (
                     <div className="flex items-center justify-center gap-1 leading-none mt-0.5">
-                      <span className="text-[8.5px] sm:text-[11px] font-semibold text-stone-400 line-through">
+                      <span className="text-[8px] sm:text-[10.5px] font-medium text-stone-400 line-through">
                         ৳{originalTotal.toLocaleString('bn-BD')}
                       </span>
                       {savingsAmount > 0 && (
-                        <span className="text-[8px] sm:text-[10.5px] font-black text-emerald-800 bg-emerald-50 border border-emerald-300 px-1.5 py-0.2 rounded-full shadow-2xs">
+                        <span className="text-[7.5px] sm:text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-1 sm:px-1.5 py-0.2 rounded-full shadow-2xs leading-none">
                           সাশ্রয় ৳{savingsAmount.toLocaleString('bn-BD')}
                         </span>
                       )}
@@ -909,20 +915,27 @@ export const ProductComboChart: React.FC<ProductComboChartProps> = ({
                           #{idx + 1}
                         </span>
                         {itemSize && (
-                          <span className="text-[9px] font-bold text-amber-900 bg-amber-100/80 border border-amber-200 px-1 py-0.2 rounded truncate">
+                          <span className="text-[9px] font-bold text-amber-900 bg-amber-100/80 border border-amber-200 px-1.5 py-0.2 rounded truncate">
                             {itemSize}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs font-bold text-stone-900 truncate mt-0.5" title={p.name}>
+                      <p 
+                        className="text-xs font-bold text-stone-900 line-clamp-2 leading-snug mt-1" 
+                        title={p.name}
+                      >
                         {p.name}
                       </p>
-                      <div className="flex items-center justify-between mt-0.5">
-                        <span className="text-xs font-black text-rose-600">
+                      {/* Stacked price & discount price for clean mobile clarity */}
+                      <div className="flex flex-col mt-1 leading-none">
+                        <span 
+                          className="text-xs sm:text-[13px] text-rose-600 leading-none"
+                          style={{ fontWeight: 700 }}
+                        >
                           ৳{p.price.toLocaleString('bn-BD')}
                         </span>
                         {p.originalPrice && p.originalPrice > p.price && (
-                          <span className="text-[10px] text-stone-400 line-through">
+                          <span className="text-[9.5px] sm:text-[10px] text-stone-400 line-through leading-none mt-0.5">
                             ৳{p.originalPrice.toLocaleString('bn-BD')}
                           </span>
                         )}
