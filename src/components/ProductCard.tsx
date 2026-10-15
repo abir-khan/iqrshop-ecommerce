@@ -121,9 +121,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </span>
           </div>
 
-          {/* Product Title (2-Line Clamp for natural readability, preventing awkward truncation) */}
+          {/* Product Title (2-Line Clamp with exact 13.5px font-size and 1.4 line-height) */}
           <h3 
-            className="font-bold text-zinc-900 text-[11.5px] sm:text-sm leading-snug line-clamp-2 min-h-[30px] sm:min-h-[38px] group-hover:text-emerald-800 transition-colors" 
+            className="font-bold text-zinc-900 group-hover:text-emerald-800 transition-colors" 
+            style={{
+              fontSize: '13.5px',
+              lineHeight: 1.4,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              minHeight: '38px',
+            }}
             title={product.name}
           >
             {product.name}
@@ -131,15 +140,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Price & Action Row */}
-        <div className="pt-1 border-t border-zinc-100/90 space-y-1.5 min-w-0">
-          {/* Price */}
-          <div className="flex items-baseline gap-1.5 min-w-0">
+        <div className="pt-1.5 border-t border-zinc-100/90 space-y-1.5 min-w-0">
+          {/* Price & Discount Tag with enhanced gap */}
+          <div className="flex items-baseline gap-2.5 sm:gap-3 min-w-0">
             <span className="text-xs sm:text-base font-black text-stone-950 shrink-0">
               ৳{product.price}
             </span>
             {product.originalPrice && (
               <span className="text-[10px] sm:text-xs text-zinc-400 line-through font-normal shrink-0">
                 ৳{product.originalPrice}
+              </span>
+            )}
+            {discountAmount > 0 && (
+              <span className="text-[9px] sm:text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-200/80 px-1.5 py-0.2 rounded-full shrink-0">
+                -৳{discountAmount}
               </span>
             )}
           </div>
