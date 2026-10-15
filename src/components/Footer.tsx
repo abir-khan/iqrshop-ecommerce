@@ -130,59 +130,72 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* MOBILE COMPACT FOOTER (< md:) */}
-        <div className="md:hidden space-y-2 pt-0.5 pb-2 border-b border-[#193828] text-xs">
+        <div 
+          className="md:hidden space-y-3 pt-2.5 pb-4 border-b border-[#193828] text-zinc-300"
+          style={{ fontSize: '12.5px', lineHeight: 1.5 }}
+        >
           
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-md bg-emerald-800 text-amber-300 flex items-center justify-center font-black text-xs border border-amber-400/40">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-800 text-amber-300 flex items-center justify-center font-black text-sm border border-amber-400/40">
                 {siteSettings.logoIcon || '☪'}
               </div>
-              <span className="text-sm font-black text-white">
+              <span className="text-base font-black text-white">
                 {siteSettings.siteName}
               </span>
             </div>
 
             <a 
               href={`tel:${siteSettings.helplinePhone}`} 
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-800 text-white font-bold text-[11px]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs"
             >
-              <Phone className="w-3 h-3 text-amber-300" />
+              <Phone className="w-3.5 h-3.5 text-amber-300" />
               <span>{siteSettings.helplineDisplay}</span>
             </a>
           </div>
 
-          <p className="text-zinc-300 text-[10.5px] leading-snug">
+          <p 
+            className="text-zinc-300"
+            style={{ fontSize: '12.5px', lineHeight: 1.5 }}
+          >
             {siteSettings.tagline}। {siteSettings.announcementText}
           </p>
 
-          <div className="flex flex-wrap items-center gap-1 text-[10.5px] font-semibold">
-            <a href="#featured" className="bg-[#132a20] text-zinc-200 hover:text-white px-2 py-0.5 rounded border border-[#1f4a35]">
+          <div className="flex flex-wrap items-center gap-2 font-semibold pt-0.5">
+            <a href="#featured" className="bg-[#132a20] text-zinc-200 hover:text-white px-3 py-1 rounded-lg border border-[#1f4a35] transition-colors">
               প্রিমিয়াম কালেকশন
             </a>
             <button 
               onClick={() => openPolicy('shipping')} 
-              className="bg-[#132a20] text-amber-300 hover:text-white px-2 py-0.5 rounded border border-[#1f4a35] cursor-pointer"
+              className="bg-[#132a20] text-amber-300 hover:text-white px-3 py-1 rounded-lg border border-[#1f4a35] cursor-pointer transition-colors"
             >
               পলিসি ও সাপোর্ট
             </button>
-            <a href="#reviews" className="bg-[#132a20] text-zinc-200 hover:text-white px-2 py-0.5 rounded border border-[#1f4a35]">
+            <a href="#reviews" className="bg-[#132a20] text-zinc-200 hover:text-white px-3 py-1 rounded-lg border border-[#1f4a35] transition-colors">
               রিভিউ
             </a>
           </div>
 
-          <div className="flex items-center justify-between pt-0.5 text-[9px] font-bold">
-            <div className="flex items-center gap-1">
-              <span className="bg-[#183a29] text-emerald-200 px-1.5 py-0.2 rounded">
+          {/* Payment Badges with generous spacing & clean typography */}
+          <div className="space-y-2 pt-1.5">
+            <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
+              <span className="bg-[#183a29] text-emerald-200 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-2xs">
                 ক্যাশ অন ডেলিভারি
               </span>
-              <span className="bg-[#183a29] text-rose-200 px-1.5 py-0.2 rounded">
+              <span className="bg-[#183a29] text-rose-200 border border-rose-500/30 px-3 py-1.5 rounded-lg shadow-2xs">
                 বিকাশ
               </span>
-              <span className="bg-[#183a29] text-amber-200 px-1.5 py-0.2 rounded">
+              <span className="bg-[#183a29] text-amber-200 border border-amber-500/30 px-3 py-1.5 rounded-lg shadow-2xs">
                 নগদ
               </span>
             </div>
-            <span className="text-[10px] text-zinc-400">{siteSettings.copyrightText}</span>
+            
+            <p 
+              className="text-zinc-400 pt-1"
+              style={{ fontSize: '12.5px', lineHeight: 1.5 }}
+            >
+              {siteSettings.copyrightText}
+            </p>
           </div>
 
         </div>
@@ -282,14 +295,14 @@ export const Footer: React.FC = () => {
             </div>
 
             <div className="pt-2">
-              <div className="flex flex-wrap gap-1.5 text-[11px] font-bold">
-                <span className="bg-[#183a29] text-emerald-200 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+              <div className="flex flex-wrap gap-2.5 sm:gap-3 text-xs font-bold">
+                <span className="bg-[#183a29] text-emerald-200 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-2xs">
                   ক্যাশ অন ডেলিভারি
                 </span>
-                <span className="bg-[#183a29] text-rose-200 border border-rose-500/30 px-2.5 py-1 rounded-lg">
+                <span className="bg-[#183a29] text-rose-200 border border-rose-500/30 px-3 py-1.5 rounded-lg shadow-2xs">
                   বিকাশ
                 </span>
-                <span className="bg-[#183a29] text-amber-200 border border-amber-500/30 px-2.5 py-1 rounded-lg">
+                <span className="bg-[#183a29] text-amber-200 border border-amber-500/30 px-3 py-1.5 rounded-lg shadow-2xs">
                   নগদ
                 </span>
               </div>
@@ -299,23 +312,26 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* BOTTOM COPYRIGHT BAR */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400">
-          <p>{siteSettings.copyrightText}</p>
-          <div className="flex items-center gap-3 text-zinc-300">
+        <div 
+          className="flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4 text-zinc-400 pt-4 pb-2"
+          style={{ fontSize: '12.5px', lineHeight: 1.5 }}
+        >
+          <p className="text-zinc-400">{siteSettings.copyrightText}</p>
+          <div className="flex items-center gap-3.5 text-zinc-300 font-medium">
             <button 
               onClick={() => openPolicy('shipping')} 
               className="hover:text-amber-300 transition cursor-pointer"
             >
               ডেলিভারি পলিসি
             </button>
-            <span>•</span>
+            <span className="text-zinc-600">•</span>
             <button 
               onClick={() => openPolicy('return')} 
               className="hover:text-amber-300 transition cursor-pointer"
             >
               রিটার্ন পলিসি
             </button>
-            <span>•</span>
+            <span className="text-zinc-600">•</span>
             <button 
               onClick={() => {
                 window.location.hash = '#admin';
