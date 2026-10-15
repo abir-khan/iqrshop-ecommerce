@@ -39,6 +39,8 @@ export interface ProductComboChartProps {
   onSelectProduct?: (product: Product) => void;
   /** Callback when user buys the combo */
   onBuyCombo?: (chart: ComboChart, products: Product[]) => void;
+  /** Callback when the active combo chart changes */
+  onActiveChartChange?: (chart: ComboChart) => void;
   /** Custom wrapper CSS class */
   className?: string;
 }
@@ -145,6 +147,7 @@ export const ProductComboChart: React.FC<ProductComboChartProps> = ({
   catalog: propCatalog,
   onSelectProduct,
   onBuyCombo,
+  onActiveChartChange,
   className = '',
 }) => {
   const { data: cmsData } = useCms();
@@ -205,6 +208,13 @@ export const ProductComboChart: React.FC<ProductComboChartProps> = ({
   }, [activeComboId, effectiveCharts]);
 
   const activeChart: ComboChart | undefined = effectiveCharts[selectedChartIndex] || effectiveCharts[0];
+
+  // Notify parent component when active chart changes
+  useEffect(() => {
+    if (activeChart && onActiveChartChange) {
+      onActiveChartChange(activeChart);
+    }
+  }, [activeChart?.id, onActiveChartChange]);
 
   // Scarcity state: live daily countdown to midnight & realistic remaining promo stock
   const [countdownStr, setCountdownStr] = useState<string>('');
@@ -446,6 +456,7 @@ export const ProductComboChart: React.FC<ProductComboChartProps> = ({
                 onClick={() => {
                   setSelectedChartIndex(i);
                   setHoveredSliceIndex(null);
+                  onActiveChartChange?.(chart);
                 }}
                 className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-xs shrink-0 ${
                   selectedChartIndex === i

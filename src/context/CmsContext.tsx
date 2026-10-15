@@ -23,8 +23,9 @@ import {
   saveCmsDataToSupabase,
 } from '../lib/supabase';
 
-const LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v2';
-const LEGACY_LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v1';
+const LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v3';
+const LEGACY_LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v2';
+const LEGACY_LOCAL_STORAGE_KEY_V1 = 'iqrshop_cms_store_v1';
 const ADMIN_SESSION_KEY = 'iqrshop_admin_auth_v1';
 
 // Admin Credentials
@@ -89,7 +90,7 @@ const CmsContext = createContext<CmsContextType | null>(null);
 export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<CmsStoreData>(() => {
     try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY);
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY_V1);
       if (stored) {
         const parsed = JSON.parse(stored);
         
@@ -119,10 +120,15 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           });
         }
 
+        const rawComboId = parsed.siteSettings?.featuredComboId;
+        const resolvedComboId = (!rawComboId || rawComboId === 'combo-ramadan-special')
+          ? 'combo-sukkari-dates'
+          : rawComboId;
+
         const mergedSiteSettings: SiteSettings = {
           ...DEFAULT_CMS_DATA.siteSettings,
           ...(parsed.siteSettings || {}),
-          featuredComboId: parsed.siteSettings?.featuredComboId || DEFAULT_CMS_DATA.siteSettings.featuredComboId || 'combo-ramadan-special',
+          featuredComboId: resolvedComboId,
           featuredProductsLimit: parsed.siteSettings?.featuredProductsLimit || DEFAULT_CMS_DATA.siteSettings.featuredProductsLimit || 8,
         };
 

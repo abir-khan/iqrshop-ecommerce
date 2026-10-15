@@ -79,7 +79,7 @@ export const DEFAULT_CMS_DATA: CmsStoreData = {
       youtube: 'https://youtube.com',
       whatsapp: 'https://wa.me/8801700000000',
     },
-    featuredComboId: 'combo-ramadan-special',
+    featuredComboId: 'combo-sukkari-dates',
     featuredProductsLimit: 8,
   },
   headerNavLinks: DEFAULT_HEADER_NAV_LINKS,

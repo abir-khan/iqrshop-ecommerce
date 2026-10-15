@@ -32,6 +32,7 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
   // Active combo charts loaded from DB/cache to resolve the featured combo
   const [comboCharts, setComboCharts] = useState<ComboChart[]>([]);
   const [showAllProducts, setShowAllProducts] = useState(false);
+  const [selectedCombo, setSelectedCombo] = useState<ComboChart | null>(null);
 
   useEffect(() => {
     fetchActiveComboCharts().then((charts) => {
@@ -39,18 +40,19 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
     });
   }, []);
 
-  // Determine active featured combo based on Admin's selection (siteSettings.featuredComboId)
+  // Determine active featured combo based on user selection or Admin's selection (siteSettings.featuredComboId)
   const featuredCombo = useMemo(() => {
+    if (selectedCombo) return selectedCombo;
     const targetId = data.siteSettings.featuredComboId;
     if (targetId && comboCharts.length > 0) {
       const found = comboCharts.find((c) => c.id === targetId);
       if (found) return found;
     }
     return comboCharts[0] || null;
-  }, [data.siteSettings.featuredComboId, comboCharts]);
+  }, [selectedCombo, data.siteSettings.featuredComboId, comboCharts]);
 
   // The category belonging to the selected combo
-  const featuredCategoryId = featuredCombo?.categoryId || 'attar';
+  const featuredCategoryId = featuredCombo?.categoryId || 'organic';
   const featuredCategoryObj = data.categories.find((c) => c.id === featuredCategoryId) || {
     id: featuredCategoryId,
     name: 'প্রিমিয়াম কালেকশন',
@@ -127,7 +129,8 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
                     </p>
                   </div>
                   <ProductComboChart
-                    activeComboId={data.siteSettings.featuredComboId}
+                    activeComboId={featuredCombo?.id || data.siteSettings.featuredComboId}
+                    onActiveChartChange={(chart) => setSelectedCombo(chart)}
                     onSelectProduct={onQuickView}
                     onBuyCombo={(chart, prods) => {
                       if (prods.length > 0) {
