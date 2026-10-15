@@ -65,7 +65,7 @@ export const DEFAULT_CMS_DATA: CmsStoreData = {
   },
   heroData: {
     ...((liveCmsData as any).heroData || {}),
-    mainImage: '/hero-hajj-umrah.webp',
+    mainImage: '/kaaba-hero.jpg',
     externalButtonUrl: 'https://hajjumrah.iqrshop.com/',
     externalButtonText: 'সাশ্রয়ী দামে হজ্জ উমরাহ সকল পন্য কিনুন',
   },

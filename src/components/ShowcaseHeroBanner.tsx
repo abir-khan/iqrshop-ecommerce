@@ -12,57 +12,84 @@ export const ShowcaseHeroBanner: React.FC<ShowcaseHeroBannerProps> = ({ onSelect
 
   return (
     <section className="py-2 sm:py-5 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-      {/* Centered / Bounded Hero Banner Card (Compact & Focused) */}
+      {/* Full-width rounded card (border-radius: 24px) */}
       <div 
-        className="relative max-w-4xl mx-auto rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-[#0a1f16] via-[#122e22] to-[#183a2b] text-white p-4 sm:p-8 lg:p-10 border border-[#234d37] shadow-xl group transition-all duration-300"
+        className="relative w-full rounded-[24px] overflow-hidden bg-[#0d2b1e] text-white p-6 sm:p-7 lg:p-11 xl:p-12 border border-[#184230] shadow-2xl group transition-all duration-300"
       >
-        {/* Subtle Background Pattern & Luxury Ambient Glow */}
+        {/* Subtle dot pattern */}
         <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
-        <div className="absolute -top-24 -right-24 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
         
-        {/* Content Container (Left-aligned, clean, elegant) */}
-        <div className="relative space-y-2 sm:space-y-3.5 max-w-2xl text-left z-10">
+        {/* Subtle luxury ambient glow */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 bg-[#F5B800]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        
+        {/* Two-column layout using flexbox (Desktop: Left 58%, Right 42% | Mobile: Stacked single column) */}
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-10">
           
-          {/* Badge: ১০০% খাঁটি ও হালাল কালেকশন */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-300 text-xs sm:text-xs font-bold shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-            <span>{heroData.badgeText || '১০০% খাঁটি ও হালাল কালেকশন'}</span>
+          {/* Left Side: 55-60% width on Desktop */}
+          <div className="w-full lg:w-[58%] text-left space-y-3 sm:space-y-4">
+            
+            {/* Small gold/yellow badge at top */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5B800]/15 border border-[#F5B800]/35 text-[#F5B800] text-xs font-bold shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-[#F5B800] shrink-0" />
+              <span>{heroData.badgeText || '১০০% খাঁটি ও হালাল কালেকশন'}</span>
+            </div>
+
+            {/* Main heading: font-weight 700 (not 900), line-height 1.35-1.45, no negative letter-spacing */}
+            <h1 
+              className="text-2xl sm:text-3xl lg:text-[38px] xl:text-[42px] text-white tracking-normal"
+              style={{ 
+                fontWeight: 700, 
+                lineHeight: 1.38, 
+                letterSpacing: '0px',
+                fontFeatureSettings: '"liga" 1, "calt" 1'
+              }}
+            >
+              {heroData.titlePrefix || 'সুন্নতি লাইফস্টাইল ও'}{' '}
+              <span className="text-[#F5B800]">
+                {heroData.titleHighlight || 'প্রিমিয়াম কালেকশন'}
+              </span>
+            </h1>
+
+            {/* Short subtitle in light gray/white */}
+            <p 
+              className="text-xs sm:text-sm lg:text-base text-zinc-200/90 font-normal max-w-xl"
+              style={{ lineHeight: 1.45 }}
+            >
+              {heroData.description || 'আতর, তুর্কি জায়নামাজ ও সুন্নতি পণ্য ক্যাশ অন ডেলিভারিতে।'}
+            </p>
+
+            {/* CTA Button + Trust Text: Full-width button on mobile, auto on desktop */}
+            <div className="pt-2 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectCategory('all');
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 sm:px-8 sm:py-3.5 rounded-full bg-[#F5B800] hover:bg-[#e0a800] text-stone-950 text-sm sm:text-base font-bold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap shrink-0 group/cta"
+              >
+                <span>কালেকশন দেখুন</span>
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover/cta:translate-x-1 transition-transform shrink-0" />
+              </button>
+
+              <div className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs sm:text-sm text-emerald-300 font-medium">
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" />
+                <span>{heroData.trustBadgeText || 'পণ্য দেখে মূল্য পরিশোধ'}</span>
+              </div>
+            </div>
+
           </div>
 
-          {/* Heading: সুন্নতি লাইফস্টাইল ও প্রিমিয়াম কালেকশন with font-weight: 700 */}
-          <h1 
-            className="text-2xl sm:text-4xl lg:text-5xl text-white uppercase tracking-tight"
-            style={{ fontWeight: 700, lineHeight: 1.28, letterSpacing: '-0.35px' }}
-          >
-            {heroData.titlePrefix || 'সুন্নতি লাইফস্টাইল ও'}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500">
-              {heroData.titleHighlight || 'প্রিমিয়াম কালেকশন'}
-            </span>
-          </h1>
-
-          {/* Subtitle: আতর, তুর্কি জায়নামাজ ও সুন্নতি পণ্য ক্যাশ অন ডেলিভারিতে। */}
-          <p className="text-xs sm:text-sm lg:text-base text-zinc-300 leading-snug sm:leading-relaxed font-normal max-w-xl">
-            {heroData.description || 'আতর, তুর্কি জায়নামাজ ও সুন্নতি পণ্য ক্যাশ অন ডেলিভারিতে।'}
-          </p>
-
-          {/* Prominent Yellow Button + Trust Text */}
-          <div className="pt-2 sm:pt-4 flex flex-wrap items-center gap-3.5 sm:gap-5">
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelectCategory('all');
-              }}
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 sm:px-8 sm:py-3.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-stone-950 text-sm sm:text-base font-extrabold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap shrink-0 group/cta ring-2 ring-amber-300/40"
-            >
-              <span>কালেকশন দেখুন</span>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover/cta:translate-x-1 transition-transform shrink-0" />
-            </button>
-
-            <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-emerald-200 font-medium">
-              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" />
-              <span>{heroData.trustBadgeText || 'পণ্য দেখে মূল্য পরিশোধ'}</span>
-            </span>
+          {/* Right Side (Desktop min 1024px): 40-45% width, high quality daytime Kaaba photo, no text overlay */}
+          <div className="hidden lg:block lg:w-[42%] shrink-0">
+            <div className="relative w-full aspect-[4/3] max-h-[350px] rounded-[16px] overflow-hidden shadow-2xl shadow-black/40 border border-white/10 group-hover:scale-[1.01] transition-transform duration-300">
+              <img
+                src={heroData.mainImage || '/kaaba-hero.jpg'}
+                alt="পবিত্র কাবা শরীফ - মক্কা মুকাররমা"
+                className="w-full h-full object-cover"
+                loading="eager"
+              />
+            </div>
           </div>
 
         </div>
