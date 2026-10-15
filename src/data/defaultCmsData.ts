@@ -90,11 +90,11 @@ export const DEFAULT_CMS_DATA: CmsStoreData = {
     description: 'আতর, তুর্কি জায়নামাজ ও সুন্নতি পণ্য ক্যাশ অন ডেলিভারিতে।',
     ctaButtonText: 'কালেকশন দেখুন ও অর্ডার করুন',
     trustBadgeText: 'পণ্য দেখে মূল্য পরিশোধ',
-    mainImage: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&auto=format&fit=crop&q=80',
-    mainImageAlt: 'হজ্জ উমরাহ ও ইসলামিক লাইফস্টাইল',
-    mainImageTitle: 'হজ্জ উমরাহ ও ইসলামিক লাইফস্টাইল',
-    externalButtonText: 'সাশ্রয়ী দামে হজ্জ উমরাহ সকল পণ্য কিনুন',
-    externalButtonUrl: 'https://iqrshop.com',
+    mainImage: '/hero-hajj-umrah.webp',
+    mainImageAlt: 'হজ্জ উমরাহ করার দরকারি সবকিছু',
+    mainImageTitle: 'হজ্জ উমরাহ প্যাকেজ কালেকশন',
+    externalButtonText: 'সাশ্রয়ী দামে হজ্জ উমরাহ সকল পন্য কিনুন',
+    externalButtonUrl: 'https://hajjumrah.iqrshop.com/',
     showExternalButton: true,
     featureCards: [
       {

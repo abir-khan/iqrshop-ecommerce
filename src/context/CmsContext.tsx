@@ -23,8 +23,9 @@ import {
   saveCmsDataToSupabase,
 } from '../lib/supabase';
 
-const LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v3';
-const LEGACY_LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v2';
+const LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v4';
+const LEGACY_LOCAL_STORAGE_KEY = 'iqrshop_cms_store_v3';
+const LEGACY_LOCAL_STORAGE_KEY_V2 = 'iqrshop_cms_store_v2';
 const LEGACY_LOCAL_STORAGE_KEY_V1 = 'iqrshop_cms_store_v1';
 const ADMIN_SESSION_KEY = 'iqrshop_admin_auth_v1';
 
@@ -90,7 +91,7 @@ const CmsContext = createContext<CmsContextType | null>(null);
 export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<CmsStoreData>(() => {
     try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY_V1);
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY_V2) || localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY_V1);
       if (stored) {
         const parsed = JSON.parse(stored);
         
@@ -132,11 +133,15 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           featuredProductsLimit: parsed.siteSettings?.featuredProductsLimit || DEFAULT_CMS_DATA.siteSettings.featuredProductsLimit || 8,
         };
 
+        const resolvedHeroImage = (!parsed.heroData?.mainImage || parsed.heroData.mainImage.includes('unsplash') || parsed.heroData.mainImage.startsWith('data:image/'))
+          ? DEFAULT_CMS_DATA.heroData.mainImage
+          : parsed.heroData.mainImage;
+
         const migratedData: CmsStoreData = {
           ...DEFAULT_CMS_DATA,
           ...parsed,
           siteSettings: mergedSiteSettings,
-          heroData: { ...DEFAULT_CMS_DATA.heroData, ...(parsed.heroData || {}) },
+          heroData: { ...DEFAULT_CMS_DATA.heroData, ...(parsed.heroData || {}), mainImage: resolvedHeroImage },
           dualBanners: { ...DEFAULT_CMS_DATA.dualBanners, ...(parsed.dualBanners || {}) },
           policies: { ...DEFAULT_CMS_DATA.policies, ...(parsed.policies || {}) },
           orders: Array.isArray(parsed.orders) && parsed.orders.length > 0 ? parsed.orders : DEFAULT_CMS_DATA.orders,
@@ -146,7 +151,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           headerNavLinks: Array.isArray(parsed.headerNavLinks) && parsed.headerNavLinks.length > 0 ? parsed.headerNavLinks : DEFAULT_CMS_DATA.headerNavLinks,
         };
 
-        // Save migrated data to new v2 key immediately
+        // Save migrated data to new v4 key immediately
         try {
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(migratedData));
         } catch {}
@@ -191,7 +196,13 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               ...prev,
               ...cloudData,
               siteSettings: { ...prev.siteSettings, ...(cloudData.siteSettings || {}) },
-              heroData: { ...prev.heroData, ...(cloudData.heroData || {}) },
+              heroData: {
+                ...prev.heroData,
+                ...(cloudData.heroData || {}),
+                mainImage: (cloudData.heroData?.mainImage?.startsWith('data:image/') || cloudData.heroData?.mainImage?.includes('unsplash'))
+                  ? (prev.heroData?.mainImage || DEFAULT_CMS_DATA.heroData.mainImage)
+                  : (cloudData.heroData?.mainImage || prev.heroData?.mainImage),
+              },
               dualBanners: { ...prev.dualBanners, ...(cloudData.dualBanners || {}) },
               policies: { ...prev.policies, ...(cloudData.policies || {}) },
               orders: Array.isArray(cloudData.orders) && cloudData.orders.length > 0 ? cloudData.orders : prev.orders,
