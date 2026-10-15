@@ -68,7 +68,7 @@ export const ShowcaseHeroBanner: React.FC<ShowcaseHeroBannerProps> = ({ onSelect
                 }}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 sm:px-8 sm:py-3.5 rounded-full bg-[#F5B800] hover:bg-[#e0a800] text-stone-950 text-sm sm:text-base font-bold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap shrink-0 group/cta"
               >
-                <span>কালেকশন দেখুন</span>
+                <span>{heroData.ctaButtonText || 'কালেকশন দেখুন'}</span>
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover/cta:translate-x-1 transition-transform shrink-0" />
               </button>
 

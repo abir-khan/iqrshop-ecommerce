@@ -373,11 +373,17 @@ export async function deleteComboChart(id: string): Promise<{ success: boolean; 
  * Helper to resolve productIds to actual Product objects from a catalog
  */
 export function resolveComboProducts(productIds: string[], catalog: Product[]): Product[] {
-  if (!productIds || !Array.isArray(productIds) || !catalog) return [];
+  if (!catalog || catalog.length === 0) return [];
+  if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+    return catalog.slice(0, 3);
+  }
   const map = new Map(catalog.map((p) => [p.id, p]));
-  return productIds
+  const matched = productIds
     .map((id) => map.get(id))
     .filter((p): p is Product => Boolean(p));
+
+  if (matched.length > 0) return matched;
+  return catalog.slice(0, 3);
 }
 
 /**

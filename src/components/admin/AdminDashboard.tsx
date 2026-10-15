@@ -1401,6 +1401,67 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 </div>
               </div>
 
+              {/* 📝 Combo Section Header & Titles Customization Card */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-600" />
+                      <span>হোমপেজ কম্বো সেকশন হেডার ও লেখা কাস্টমাইজেশন</span>
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      হোমপেজের 'সার্কুলার কম্বো চার্ট অফার' সেকশনের উপরের ব্যাজ, মূল শিরোনাম ও সাবটাইটেল পরিবর্তন করুন
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateSiteSettings(localSettings);
+                      notifySuccess('কম্বো সেকশনের হেডার টেক্সট সফলভাবে সেভ করা হয়েছে!');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer shrink-0 self-end sm:self-auto"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>হেডার টেক্সট সেভ করুন</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">টপ ব্যাজ টেক্সট</label>
+                    <input
+                      type="text"
+                      placeholder="✨ এক্সক্লুসিভ প্যাকেজ"
+                      value={localSettings.comboSectionBadge || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, comboSectionBadge: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-emerald-600 font-medium"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">সেকশন মূল শিরোনাম (হেডিং)</label>
+                    <input
+                      type="text"
+                      placeholder="সার্কুলার কম্বো চার্ট অফার"
+                      value={localSettings.comboSectionTitle || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, comboSectionTitle: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-emerald-600 font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">সেকশন সাব-টাইটেল / বিবরণ</label>
+                  <textarea
+                    rows={2}
+                    placeholder="প্যাকেজের যেকোনো আইটেমে হোভার করে বিস্তারিত দেখুন এবং আকর্ষণীয় ছাড়ে পুরো সেট অর্ডার করুন"
+                    value={localSettings.comboSectionSubtitle || ''}
+                    onChange={(e) => setLocalSettings({ ...localSettings, comboSectionSubtitle: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:border-emerald-600 font-medium"
+                  />
+                </div>
+              </div>
+
               {/* ⭐ Featured Homepage Combo & Category Control Panel */}
               <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border-2 border-emerald-600/40 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

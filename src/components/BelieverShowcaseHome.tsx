@@ -119,16 +119,17 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
                 <section key="combo_chart" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4">
                   <div className="text-center mb-6 sm:mb-8">
                     <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-3.5 py-1 rounded-full shadow-2xs">
-                      ✨ এক্সক্লুসিভ প্যাকেজ
+                      {data.siteSettings.comboSectionBadge || '✨ এক্সক্লুসিভ প্যাকেজ'}
                     </span>
                     <h2 className="text-xl sm:text-3xl font-black text-stone-900 mt-2">
-                      সার্কুলার কম্বো চার্ট অফার
+                      {data.siteSettings.comboSectionTitle || sec.name || 'সার্কুলার কম্বো চার্ট অফার'}
                     </h2>
                     <p className="text-xs sm:text-sm text-stone-500 mt-1 max-w-lg mx-auto">
-                      প্যাকেজের যেকোনো আইটেমে হোভার করে বিস্তারিত দেখুন এবং আকর্ষণীয় ছাড়ে পুরো সেট অর্ডার করুন
+                      {data.siteSettings.comboSectionSubtitle || sec.description || 'প্যাকেজের যেকোনো আইটেমে হোভার করে বিস্তারিত দেখুন এবং আকর্ষণীয় ছাড়ে পুরো সেট অর্ডার করুন'}
                     </p>
                   </div>
                   <ProductComboChart
+                    comboCharts={comboCharts.length > 0 ? comboCharts : undefined}
                     activeComboId={featuredCombo?.id || data.siteSettings.featuredComboId}
                     onActiveChartChange={(chart) => setSelectedCombo(chart)}
                     onSelectProduct={onQuickView}

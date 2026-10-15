@@ -133,9 +133,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           featuredProductsLimit: parsed.siteSettings?.featuredProductsLimit || DEFAULT_CMS_DATA.siteSettings.featuredProductsLimit || 8,
         };
 
-        const resolvedHeroImage = (!parsed.heroData?.mainImage || parsed.heroData.mainImage.includes('unsplash') || parsed.heroData.mainImage.startsWith('data:image/'))
-          ? DEFAULT_CMS_DATA.heroData.mainImage
-          : parsed.heroData.mainImage;
+        const resolvedHeroImage = parsed.heroData?.mainImage || DEFAULT_CMS_DATA.heroData.mainImage;
 
         const migratedData: CmsStoreData = {
           ...DEFAULT_CMS_DATA,
@@ -210,9 +208,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               heroData: {
                 ...prev.heroData,
                 ...(cloudData.heroData || {}),
-                mainImage: (cloudData.heroData?.mainImage?.startsWith('data:image/') || cloudData.heroData?.mainImage?.includes('unsplash'))
-                  ? (prev.heroData?.mainImage || DEFAULT_CMS_DATA.heroData.mainImage)
-                  : (cloudData.heroData?.mainImage || prev.heroData?.mainImage),
+                mainImage: cloudData.heroData?.mainImage || prev.heroData?.mainImage || DEFAULT_CMS_DATA.heroData.mainImage,
               },
               dualBanners: { ...prev.dualBanners, ...(cloudData.dualBanners || {}) },
               policies: { ...prev.policies, ...(cloudData.policies || {}) },

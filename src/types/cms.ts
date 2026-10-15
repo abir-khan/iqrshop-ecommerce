@@ -52,6 +52,9 @@ export interface SiteSettings {
   };
   featuredComboId?: string;
   featuredProductsLimit?: number;
+  comboSectionBadge?: string;
+  comboSectionTitle?: string;
+  comboSectionSubtitle?: string;
 }
 
 export interface HeaderNavLink {
