@@ -175,14 +175,25 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  // Save to LocalStorage whenever data changes
+  const autoSyncTimerRef = React.useRef<any>(null);
+
+  // Save to LocalStorage whenever data changes and auto-sync to Supabase in background
   const saveToLocal = useCallback((newData: CmsStoreData) => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newData));
     } catch (e) {
       console.error('Failed to persist CMS data to localStorage:', e);
     }
-  }, []);
+
+    if (supabaseConfig.url && supabaseConfig.anonKey) {
+      if (autoSyncTimerRef.current) clearTimeout(autoSyncTimerRef.current);
+      autoSyncTimerRef.current = setTimeout(() => {
+        saveCmsDataToSupabase(newData).catch((err) => {
+          console.warn('Background Supabase auto-sync failed:', err);
+        });
+      }, 1000);
+    }
+  }, [supabaseConfig.url, supabaseConfig.anonKey]);
 
   // Sync with Supabase on initial load if configured
   useEffect(() => {
