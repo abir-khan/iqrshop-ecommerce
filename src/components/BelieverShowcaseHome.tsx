@@ -212,11 +212,11 @@ export const BelieverShowcaseHome: React.FC<BelieverShowcaseHomeProps> = ({
                         <div className="flex items-center gap-2">
                           <Grid className="w-4 h-4 text-emerald-800" />
                           <h4 className="text-sm sm:text-base font-black text-zinc-900">
-                            অন্যান্য ক্যাটাগরি এক্সপ্লোর করুন
+                            অন্যান্য ক্যাটাগরি
                           </h4>
                         </div>
                         <span className="text-[11px] sm:text-xs text-zinc-500 font-medium">
-                          এক ক্লিকে পছন্দের ক্যাটাগরিতে যান
+
                         </span>
                       </div>
 
