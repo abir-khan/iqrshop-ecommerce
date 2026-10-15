@@ -15,41 +15,44 @@ export const Hero: React.FC<HeroProps> = ({ onSelectCategory }) => {
       
       {/* 1. COMPACT HERO BANNER (MOBILE OPTIMIZED) */}
       <div 
-        className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#11241A] via-[#163023] to-[#1A382A] text-white p-3.5 sm:p-8 lg:p-10 border border-[#234d37] shadow-md group flex flex-row items-center justify-between gap-3 sm:gap-8 transition-all duration-300"
+        className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#11241A] via-[#163023] to-[#1A382A] text-white p-3.5 sm:p-8 lg:p-10 border border-[#234d37] shadow-md group flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8 transition-all duration-300"
       >
         {/* Left Content */}
-        <div className="space-y-1.5 sm:space-y-3.5 max-w-[62%] sm:max-w-xl text-left z-10">
+        <div className="space-y-1.5 sm:space-y-3.5 w-full sm:max-w-xl text-left z-10">
           <div className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-3.5 sm:py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-[10px] sm:text-xs font-bold shadow-xs">
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-300" />
             <span>{heroData.badgeText}</span>
           </div>
 
-          <h1 className="text-sm sm:text-2xl lg:text-4xl font-black text-white leading-tight tracking-tight">
+          <h1 
+            className="text-xl sm:text-2xl lg:text-4xl font-black text-white"
+            style={{ lineHeight: 1.28, letterSpacing: '-0.35px' }}
+          >
             {heroData.titlePrefix} <span className="text-amber-400">{heroData.titleHighlight}</span>
           </h1>
 
           {/* 2-Line Concise Text */}
-          <p className="text-[11px] sm:text-sm text-zinc-300 leading-snug sm:leading-relaxed font-normal line-clamp-2">
+          <p className="text-xs sm:text-sm text-zinc-300 leading-snug sm:leading-relaxed font-normal line-clamp-2">
             {heroData.description}
           </p>
 
-          <div className="pt-0.5 sm:pt-2 flex flex-wrap items-center gap-2 sm:gap-4">
-            <span className="inline-flex items-center gap-1 sm:gap-2 px-3 py-1.5 sm:px-6 sm:py-3 rounded-lg sm:rounded-2xl bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs sm:text-sm font-black transition-all shadow-md group-hover:scale-105">
-              <span className="hidden sm:inline">{heroData.ctaButtonText}</span>
-              <span className="sm:hidden">অর্ডার করুন</span>
-              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+          <div className="pt-1 sm:pt-2 flex flex-wrap items-center gap-2 sm:gap-4">
+            <span className="inline-flex items-center gap-1 sm:gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-full sm:rounded-2xl bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs sm:text-sm font-black transition-all shadow-md group-hover:scale-105 whitespace-nowrap shrink-0">
+              <span className="sm:hidden">কালেকশন দেখুন</span>
+              <span className="hidden sm:inline">{heroData.ctaButtonText || 'কালেকশন দেখুন ও অর্ডার করুন'}</span>
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform shrink-0" />
             </span>
 
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-zinc-300 font-medium">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <div className="inline-flex items-center gap-1.5 text-xs text-zinc-300 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
               <span>{heroData.trustBadgeText}</span>
             </div>
           </div>
         </div>
 
         {/* Right Product Image Spotlight (Compact on Mobile) */}
-        <div className="w-[38%] sm:w-5/12 flex flex-col items-center justify-center gap-2 z-10 shrink-0">
-          <div className="relative w-24 h-24 sm:w-52 sm:h-52 md:w-64 md:h-64 lg:w-72 lg:h-72 aspect-square rounded-xl sm:rounded-3xl overflow-hidden shadow-md sm:shadow-2xl border border-white/20 sm:border-2 sm:border-white/10 group-hover:scale-105 transition-transform duration-500">
+        <div className="w-full sm:w-5/12 flex flex-col items-center sm:items-end justify-center gap-2 z-10 shrink-0">
+          <div className="relative w-40 h-40 sm:w-52 sm:h-52 md:w-64 md:h-64 lg:w-72 lg:h-72 aspect-square rounded-xl sm:rounded-3xl overflow-hidden shadow-md sm:shadow-2xl border border-white/20 sm:border-2 sm:border-white/10 group-hover:scale-105 transition-transform duration-500">
             <img
               src={heroData.mainImage}
               alt={heroData.mainImageAlt || heroData.mainImageTitle}
@@ -68,9 +71,10 @@ export const Hero: React.FC<HeroProps> = ({ onSelectCategory }) => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-24 sm:max-w-52 md:max-w-64 lg:max-w-72 inline-flex items-center justify-center gap-1 sm:gap-2 px-2 py-1 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 hover:border-amber-400/60 text-white hover:text-amber-300 text-[9px] sm:text-xs font-bold transition-all shadow-xs cursor-pointer text-center"
+              className="w-full max-w-40 sm:max-w-52 md:max-w-64 lg:max-w-72 inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 hover:border-amber-400/60 text-white hover:text-amber-300 text-xs sm:text-xs font-bold transition-all shadow-xs cursor-pointer text-center"
             >
-              <span className="truncate">{heroData.externalButtonText || 'অন্য ওয়েবসাইট'}</span>
+              <span className="sm:hidden font-extrabold whitespace-nowrap">হজ্জ উমরাহ পণ্য →</span>
+              <span className="hidden sm:inline truncate">{heroData.externalButtonText || 'অন্য ওয়েবসাইট'}</span>
             </a>
           )}
         </div>
