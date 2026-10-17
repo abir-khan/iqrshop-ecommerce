@@ -60,6 +60,10 @@ interface CmsContextType {
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
+  bulkUpsertProducts: (
+    newProducts: Product[],
+    mode: 'merge' | 'replace'
+  ) => { added: number; updated: number; total: number };
   
   // Category CRUD
   addCategory: (category: Category) => void;
@@ -367,6 +371,91 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const bulkUpsertProducts = (
+    newProducts: Product[],
+    mode: 'merge' | 'replace'
+  ): { added: number; updated: number; total: number } => {
+    let addedCount = 0;
+    let updatedCount = 0;
+
+    setData((prev) => {
+      // Auto-register any new categories found in the imported products
+      const existingCatIds = new Set(prev.categories.map((c) => c.id.toLowerCase()));
+      const addedCategories: Category[] = [];
+
+      newProducts.forEach((p) => {
+        const catId = (p.category || 'general').toLowerCase();
+        if (catId && !existingCatIds.has(catId) && catId !== 'all') {
+          existingCatIds.add(catId);
+          addedCategories.push({
+            id: catId,
+            name: p.category.charAt(0).toUpperCase() + p.category.slice(1),
+            icon: '📦',
+          });
+        }
+      });
+
+      let updatedProductsList: Product[];
+
+      if (mode === 'replace') {
+        updatedProductsList = [...newProducts];
+        addedCount = newProducts.length;
+      } else {
+        const existingMap = new Map<string, Product>();
+        prev.products.forEach((p) => existingMap.set(p.id, p));
+
+        newProducts.forEach((np) => {
+          if (existingMap.has(np.id)) {
+            existingMap.set(np.id, { ...existingMap.get(np.id)!, ...np });
+            updatedCount++;
+          } else {
+            // Check match by name
+            const matchedByName = prev.products.find(
+              (p) => p.name.trim().toLowerCase() === np.name.trim().toLowerCase()
+            );
+            if (matchedByName) {
+              existingMap.set(matchedByName.id, { ...matchedByName, ...np, id: matchedByName.id });
+              updatedCount++;
+            } else {
+              existingMap.set(np.id, np);
+              addedCount++;
+            }
+          }
+        });
+
+        const updatedList: Product[] = [];
+        const seenIds = new Set<string>();
+
+        // Preserve current list ordering with updated fields
+        prev.products.forEach((p) => {
+          if (existingMap.has(p.id)) {
+            updatedList.push(existingMap.get(p.id)!);
+            seenIds.add(p.id);
+          }
+        });
+
+        // Prepend brand new products
+        existingMap.forEach((p, id) => {
+          if (!seenIds.has(id)) {
+            updatedList.unshift(p);
+          }
+        });
+
+        updatedProductsList = updatedList;
+      }
+
+      const updated = {
+        ...prev,
+        categories: [...prev.categories, ...addedCategories],
+        products: updatedProductsList,
+      };
+      saveToLocal(updated);
+      return updated;
+    });
+
+    return { added: addedCount, updated: updatedCount, total: newProducts.length };
+  };
+
   // Category CRUD
   const addCategory = (category: Category) => {
     setData((prev) => {
@@ -567,6 +656,7 @@ export const CmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addProduct,
         updateProduct,
         deleteProduct,
+        bulkUpsertProducts,
         addCategory,
         updateCategory,
         deleteCategory,

@@ -37,11 +37,14 @@ import {
   X,
   Share2,
   ExternalLink,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useCms } from '../../context/CmsContext';
 import { ImageUploadField } from './ImageUploadField';
 import { ProductEditModal } from './ProductEditModal';
+import { ExcelProductsModal } from './ExcelProductsModal';
 import { OrderInvoiceModal } from './OrderInvoiceModal';
+import { exportProductsToExcel, downloadSampleExcelTemplate } from '../../lib/excelProductService';
 import { SUPABASE_SQL_SCHEMA, testSupabaseConnection } from '../../lib/supabase';
 import { 
   createComboChart, 
@@ -89,6 +92,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     addProduct,
     updateProduct,
     deleteProduct,
+    bulkUpsertProducts,
     addCategory,
     deleteCategory,
     addTestimonial,
@@ -107,6 +111,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [successNotice, setSuccessNotice] = useState<string>('');
   const [errorNotice, setErrorNotice] = useState<string>('');
+
+  // Excel Products Modal State
+  const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
   // Product Modal State
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -2755,17 +2762,62 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedProduct(null);
-                    setIsProductModalOpen(true);
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer shrink-0 active:scale-95"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>নতুন প্রোডাক্ট যোগ করুন</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Download Sample Excel Template */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      downloadSampleExcelTemplate();
+                      notifySuccess('নমুনা এক্সেল টেমপ্লেট ডাউনলোড হয়েছে!');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer shrink-0 active:scale-95"
+                    title="প্রোডাক্ট সাজানোর নমুনা এক্সেল টেমপ্লেট ডাউনলোড করুন"
+                  >
+                    <FileText className="w-4 h-4 text-slate-500" />
+                    <span>নমুনা ফাইল</span>
+                  </button>
+
+                  {/* Download All Products Excel */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      exportProductsToExcel(
+                        data.products,
+                        `iqrshop_products_${new Date().toISOString().slice(0, 10)}.xlsx`
+                      );
+                      notifySuccess('প্রোডাক্ট এক্সেল ফাইল সফলভাবে ডাউনলোড হয়েছে!');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer shrink-0 active:scale-95"
+                    title="বর্তমান সকল প্রোডাক্ট এক্সেল ফাইলে ডাউনলোড করুন"
+                  >
+                    <Download className="w-4 h-4 text-emerald-700" />
+                    <span>এক্সেল ডাউনলোড</span>
+                  </button>
+
+                  {/* Upload / Import Excel */}
+                  <button
+                    type="button"
+                    onClick={() => setIsExcelModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer shrink-0 active:scale-95"
+                    title="এক্সেল ফাইল আপলোড করে এক ক্লিকে সকল প্রোডাক্ট যোগ বা আপডেট করুন"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                    <span>এক্সেল আপলোড</span>
+                  </button>
+
+                  {/* Add Product Manual Modal */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedProduct(null);
+                      setIsProductModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer shrink-0 active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>নতুন প্রোডাক্ট যোগ করুন</span>
+                  </button>
+                </div>
               </div>
 
               {/* Categories Management Pills */}
@@ -3491,6 +3543,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               addProduct(savedProduct);
               notifySuccess('নতুন প্রোডাক্ট সফলভাবে যুক্ত হয়েছে!');
             }
+          }}
+        />
+      )}
+
+      {/* Excel Products Import / Export Modal */}
+      {isExcelModalOpen && (
+        <ExcelProductsModal
+          isOpen={isExcelModalOpen}
+          onClose={() => setIsExcelModalOpen(false)}
+          products={data.products}
+          categories={data.categories}
+          onImportSuccess={(newProducts, mode) => {
+            const stats = bulkUpsertProducts(newProducts, mode);
+            notifySuccess(
+              `এক্সেল থেকে ${stats.total}টি প্রোডাক্ট সফলভাবে সংরক্ষিত হয়েছে (${stats.added}টি যোগ, ${stats.updated}টি আপডেট)!`
+            );
+            return stats;
           }}
         />
       )}
